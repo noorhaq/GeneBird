@@ -147,9 +147,11 @@ void setup() {
   pinMode(Battery_Connection, INPUT_ANALOG); // Initializing Battery Connection Pin for Voltage Measurement
   pinMode(LED, OUTPUT); //Initialing LED 
 
-  Wire.begin(SDA,SCL, I2C_Speed);          //I2C Initiliazination
+  Wire.begin(SDA,SCL);
+  Wire.setClock (I2C_Speed);          //I2C Initiliazination
 
   delay(250);
+
 
 //  WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0));
 
@@ -225,6 +227,11 @@ void setup() {
 
 unsigned long time_now = 0;
 
+
+//**************************************************************
+//**********************
+//**************************************************************
+
 void loop() {
 Serial.println("Welcome");
   
@@ -236,37 +243,26 @@ Serial.println("Welcome");
   Serial.println(F("Checking I2C clock speed."));
   delay(1000);
   
-  TWBR = 12;                      //Set the I2C clock speed to 400kHz.
-  
+
   #if F_CPU == 16000000L          //If the clock speed is 16MHz include the next code line when compiling
     clockspeed_ok = 1;            //Set clockspeed_ok to 1
   #endif                          //End of if statement
 
   if(TWBR == 12 && clockspeed_ok){
-    Serial.println(F("I2C clock speed is correctly set to 400kHz."));
+    Serial.println(F("I2C clock speed is set to 400kHz."));
   }
   else{
-    Serial.println(F("I2C clock speed is not set to 400kHz. (ERROR 1)"));
-    error = 1;
+    Serial.println(F("I2C clock speed is set to 100kHz. "));
+    error = 0;
   }
   
-  if(error == 0){
-    Serial.println(F(""));
-    Serial.println(F("==================================================="));
-    Serial.println(F("Transmitter setup"));
-    Serial.println(F("==================================================="));
-    delay(1000);
-    Serial.print(F("Checking for valid receiver signals."));
-    //Wait 10 seconds until all receiver inputs are valid
-    wait_for_receiver();
-    Serial.println(F(""));
-  }
+
 
   //Quit the program in case of an error
   if(error == 0){
     delay(2000);
-    Serial.println(F("Place all sticks and subtrims in the center position within 10 seconds."));
-    for(int i = 9;i > 0;i--){
+    Serial.println(F("Place all sticks and subtrims in the center position within 5 seconds."));
+    for(int i = 5;i > 0;i--){
       delay(1000);
       Serial.print(i);
       Serial.print(" ");
@@ -279,17 +275,23 @@ Serial.println("Welcome");
     center_channel_4 = ppm[3];
     Serial.println(F(""));
     Serial.println(F("Center positions stored."));
-    Serial.print(F("1st Channel"));
+    Serial.print(F("Row"));
     Serial.println(ppm[0]);
-    Serial.print(F("2nd Channel "));
+    Serial.print(F("Pitch "));
     Serial.println(ppm[1]);
-    Serial.print(F("3rd Channel "));
+    Serial.print(F("Throttle "));
     Serial.println(ppm[2]);
-    Serial.print(F("4th Channel "));
+    Serial.print(F("Yaw "));
     Serial.println(ppm[3]);
-    Serial.println(F(""));
-    Serial.println(F(""));
+    Serial.println(F("Enter to countinue."));
+    Serial.read();
   } 
+//=======================================================================
+
+  
+
+
+
 
   if(error == 0){
     //What gyro is connected
