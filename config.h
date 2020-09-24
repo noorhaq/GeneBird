@@ -1,5 +1,5 @@
-#ifndef CONFIGURATION_H
-#define CONFIGURATION_H
+#ifndef CONFIG_H
+#define CONFIG_H
 
 //==================================================
 //********************PIN Setup
@@ -12,10 +12,12 @@
 #define SCL    5
 #define SDA    4
 #define sigPin 2 //For Testing or setting PPM for other countrollers
+#define PPM_RX_INPUT 11
 
 
 #define Battery_Connection ADC0 //But keep the voltage divider range from 0 to 1v
-#define CHANNEL_NUMBER_PWM 6
+#define TOTAL_RX_CHANNEL_NUMBER_PWM 6
+#define TOTAL_RX_CHANNEL_NUMBER_PPM 6
 //==================================================
 //********************Channel Receiving
 //==================================================
@@ -172,3 +174,5 @@ int32_t gps_lat_rotating_mem[40], gps_lon_rotating_mem[40];
 int32_t gps_lat_error, gps_lon_error;
 int32_t gps_lat_error_previous, gps_lon_error_previous;
 uint32_t gps_watchdog_timer;
+
+#endif
