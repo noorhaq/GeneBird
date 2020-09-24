@@ -48,8 +48,10 @@ const char *password = "";
 // =============
 // I2C Speed
 // ===========================================
-#define I2C_Speed 100000 //100kHz for original WMP
-//#define I2C_Speed 400000 //400kHz fast mode, for clones
+//#define I2C_Speed 100000 //100kHz for original WMP
+#define I2C_Speed 400000 //400kHz fast mode, for clones
+#define Gyro_Calib_offset 2000     //Default is 2000 but can be increased or decreased to calculate the offset. One thing to notice here is after the offset is calibrated the Gyro values should be zero
+
 
 //================================================
 //**********************PID Controller

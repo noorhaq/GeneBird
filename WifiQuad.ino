@@ -18,6 +18,8 @@
 volatile unsigned long next;
 volatile unsigned int ppm_running=1;
 
+boolean Gyro_Temp = false;
+float angle_roll_acc_manual_offset , angle_pitch_acc_manual_offset;
 //=================================================
 //********************Variables
 //=================================================
@@ -349,18 +351,25 @@ Serial.println("Welcome");
     Serial.println(F("Calibrating the gyro, this will take +/- 8 seconds"));
     Serial.print(F("Please wait"));
     //Let's take multiple gyro data samples so we can determine the average gyro offset (calibration).
-    for (cal_int = 0; cal_int < 2000 ; cal_int ++){              //Take 2000 readings for calibration.
+   for (int i =0; i < 100 ; i++){              //Take 2000 readings for calibration.
+      if(cal_int % 100 == 0)Serial.print(F("."));                //Print dot to indicate calibration.
+      gyro_signalen();                                           //Discarding the first 100 values.
+      delay(3);                                                  //Discarding the first 100 values.
+    }   
+   for (cal_int = 0; cal_int < Gyro_Calib_offset ; cal_int ++){              //Take 2000 readings for calibration.
       if(cal_int % 100 == 0)Serial.print(F("."));                //Print dot to indicate calibration.
       gyro_signalen();                                           //Read the gyro output.
       gyro_roll_cal += gyro_roll;                                //Ad roll value to gyro_roll_cal.
       gyro_pitch_cal += gyro_pitch;                              //Ad pitch value to gyro_pitch_cal.
       gyro_yaw_cal += gyro_yaw;                                  //Ad yaw value to gyro_yaw_cal.
-      delay(4);                                                  //Wait 3 milliseconds before the next loop.
+      delay(3);                                                  //Wait 3 milliseconds before the next loop.
     }
-    //Now that we have 2000 measures, we need to devide by 2000 to get the average gyro offset.
-    gyro_roll_cal /= 2000;                                       //Divide the roll total by 2000.
-    gyro_pitch_cal /= 2000;                                      //Divide the pitch total by 2000.
-    gyro_yaw_cal /= 2000;                                        //Divide the yaw total by 2000.
+    //Calculating average offset.
+    gyro_roll_cal /= Gyro_Calib_offset;                                       //Divide the roll total by 2000.
+    gyro_pitch_cal /= Gyro_Calib_offset;                                      //Divide the pitch total by 2000.
+    gyro_yaw_cal /= Gyro_Calib_offset;                                        //Divide the yaw total by 2000.
+    
+    gyro_signalen();
     
     //Show the calibration results
     Serial.println(F(""));
@@ -372,6 +381,50 @@ Serial.println("Welcome");
     Serial.println(gyro_yaw_cal);
     Serial.println(F(""));
     
+    //Spirit Level Value Calculation
+    gyro_signalen();
+    Serial.println(F("Calculating Spirit Level Value of IMU. Don't Move Quadcopter."));
+    Serial.println(F("...."));
+    Serial.println(F("...."));
+    Serial.println(F("...."));
+    gyro_roll -= gyro_roll_cal;
+    gyro_pitch -= gyro_pitch_cal;
+    gyro_yaw -= gyro_yaw_cal;
+
+   angle_pitch += gyro_pitch * 0.0000611;                                          //Total Angle travelled by Gyro 
+      angle_roll += gyro_roll * 0.0000611;                                         //Total Angle travelled by Gyro
+    acc_total_vector = sqrt((acc_x*acc_x)+(acc_y*acc_y)+(acc_z*acc_z));  //Calculate the total accelerometer vector
+  //The Arduino asin function is in radians, so converting to degrees.
+    angle_pitch_acc = asin((float)acc_y/acc_total_vector[0])* 57.296;       //Calculate the pitch angle
+    angle_roll_acc = asin((float)acc_x/acc_total_vector[0])* -57.296;       //Calculate the roll angle
+    
+  if(!temp){
+      angle_pitch_acc_temp = angle_pitch_acc;                                              //Accelerometer calibration value for pitch
+      angle_roll_acc_temp = angle_roll_acc; 
+      temp = true;
+       }
+   angle_pitch_acc -= angle_pitch_acc_temp ;                                              //Accelerometer calibration value for pitch
+   angle_roll_acc -= angle_roll_acc_temp;                                               //Accelerometer calibration value for roll
+  //Using Filter to Dampen the Angle
+angle_pitch_output = angle_pitch_output * 0.75 + angle_pitch * 0.25;   //Take 90% of the output pitch value and add 10% of the raw pitch value
+  angle_roll_output = angle_roll_output * 0.9 + angle_roll * 0.1;      //Take 90% of the output roll value and add 10% of the raw roll value
+     Serial.println("Are the values without moving the quadcopter 0.");
+    Serial.println("If not re run the calibration of gyro and don't move.");
+    Serial.println("Move the quadcopter/IMU around to check change in angles.");
+    Serial.println("....."); 
+    Serial.println(F("Press A to countinue and 100 Gyro values will be printed. "));
+      while(Serial.read()!='a');
+ for(int i =0; i< 100; i++){
+      Serial.print("Pitch: ");
+   Serial.print(angle_pitch ,0);
+   Serial.print(" Roll: ");
+   Serial.print(angle_roll ,0);
+   Serial.print(" Yaw: ");
+   Serial.println(gyro_z / 65.5 ,0);
+ }
+
+    Serial.println(".....");
+    Serial.print(F(""));
     Serial.println(F("==================================================="));
     Serial.println(F("Gyro axes configuration"));
     Serial.println(F("==================================================="));
@@ -387,15 +440,15 @@ Serial.println("Welcome");
       if(roll_axis & 0b10000000)Serial.println(F("Axis inverted = yes"));
       else Serial.println(F("Axis inverted = no"));
       Serial.println(F("Put the quadcopter back in its original position"));
-      Serial.println(F("Move stick 'nose up' and back to center to continue"));
-      check_to_continue();
+      Serial.println(F("Press A to countinue. "));
+      while(Serial.read()!='a');
 
       //Detect the nose up movement
       Serial.println(F(""));
       Serial.println(F(""));
       Serial.println(F("Lift the nose of the quadcopter to a 45 degree angle within 10 seconds"));
-      //Check axis movement
-      check_gyro_axes(2);
+      Serial.println(F("Press A to countinue. "));
+      while(Serial.read()!='a');
     }
     if(error == 0){
       Serial.println(F("OK!"));
@@ -404,8 +457,8 @@ Serial.println("Welcome");
       if(pitch_axis & 0b10000000)Serial.println(F("Axis inverted = yes"));
       else Serial.println(F("Axis inverted = no"));
       Serial.println(F("Put the quadcopter back in its original position"));
-      Serial.println(F("Move stick 'nose up' and back to center to continue"));
-      check_to_continue();
+      Serial.println(F("Press A to countinue. "));
+      while(Serial.read()!='a');
       
       //Detect the nose right movement
       Serial.println(F(""));
@@ -421,8 +474,9 @@ Serial.println("Welcome");
       if(yaw_axis & 0b10000000)Serial.println(F("Axis inverted = yes"));
       else Serial.println(F("Axis inverted = no"));
       Serial.println(F("Put the quadcopter back in its original position"));
-      Serial.println(F("Move stick 'nose up' and back to center to continue"));
-      check_to_continue();
+     Serial.println(F("Press A to countinue. "));
+      while(Serial.read()!='a');
+      
     }
   }
   if(error == 0){
@@ -432,9 +486,9 @@ Serial.println("Welcome");
     Serial.println(F("==================================================="));
     digitalWrite(12, HIGH);
     Serial.println(F("The LED should now be lit"));
-    Serial.println(F("Move stick 'nose up' and back to center to continue"));
-    check_to_continue();
-    digitalWrite(12, LOW);
+    Serial.println(F("Press A to countinue. "));
+      while(Serial.read()!='a');
+        digitalWrite(12, LOW);
   }
   
   Serial.println(F(""));
@@ -462,6 +516,8 @@ Serial.println("Welcome");
     Serial.println(F("Writing EEPROM"));
     delay(1000);
     Serial.println(F("Done!"));
+    EEPROM.write(26,angle_roll_acc_temp);
+    EEPROM.write(27,angle_pitch_acc_temp)
     EEPROM.write(28, roll_axis);
     EEPROM.write(29, pitch_axis);
     EEPROM.write(30, yaw_axis);
