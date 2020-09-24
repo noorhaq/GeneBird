@@ -4,20 +4,20 @@
 //==================================================
 //********************PIN Setup
 //==================================================
-#define Motor1 15
-#define Motor2 14
-#define Motor3 12
-#define Motor4 13
-#define LED    16
-#define SCL    5
-#define SDA    4
-#define sigPin 2 //For Testing or setting PPM for other countrollers
-#define PPM_RX_INPUT 11
+#define  Motor1 15
+#define  Motor2 14
+#define  Motor3 12
+#define  Motor4 13
+#define  LED    16
+#define  SCL    5
+#define  SDA    4
+#define  sigPin 2 //For Testing or setting PPM for other countrollers
+#define  PPM_RX_INPUT 11
 
 
-#define Battery_Connection ADC0 //But keep the voltage divider range from 0 to 1v
-#define TOTAL_RX_CHANNEL_NUMBER_PWM 6
-#define TOTAL_RX_CHANNEL_NUMBER_PPM 6
+#define  Battery_Connection A0 //But keep the voltage divider range from 0 to 1v
+#define  TOTAL_RX_CHANNEL_NUMBER_PWM 6
+#define  TOTAL_RX_CHANNEL_NUMBER_PPM 6
 //==================================================
 //********************Channel Receiving
 //==================================================
@@ -28,7 +28,7 @@
 #define PULSE_LENGTH 300  //set the pulse length
 #define onState 0  //set polarity of the pulses: 1 is positive, 0 is negative
 
-#define DEBUGPIN 4
+#define  DEBUGPIN  4
 
 
 //WIFI Configuration

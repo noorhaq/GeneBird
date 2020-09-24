@@ -6,6 +6,7 @@
 //
 //**************************************
 #include <ESP8266WiFi.h>
+#include <ESP8266WebServer.h>
 #include <WebSocketsServer.h>
 #include <DNSServer.h>
 #include <Wire.h>
@@ -19,18 +20,17 @@ volatile unsigned long next;
 volatile unsigned int ppm_running=1;
 
 boolean Gyro_Temp = false;
-float angle_roll_acc_manual_offset , angle_pitch_acc_manual_offset;
+int32_t angle_roll_acc_manual_offset , angle_pitch_acc_manual_offset;
 //=================================================
 //********************Variables
 //=================================================
 int ppm[CHANNEL_NUMBER];
-byte lowByte, highByte, type, gyro_address, error, clockspeed_ok;
+byte lowByte, highByte, type, clockspeed_ok;
 byte roll_axis, pitch_axis, yaw_axis;
 byte receiver_check_byte, gyro_check_byte;
-int address, cal_int;
+int address;
 unsigned long timer, timer_1, timer_2, timer_3, timer_4, current_time;
-float gyro_pitch, gyro_roll, gyro_yaw;
-float gyro_roll_cal, gyro_pitch_cal, gyro_yaw_cal;
+
 const byte captive_portal=0;
 const byte DNS_PORT = 53;
 const char* serverIndex = "<form method='POST' action='/upload' enctype='multipart/form-data'><input type='file' name='update'><input type='submit' value='Update'></form>";
@@ -146,7 +146,8 @@ void setup() {
   analogWrite(Motor3,0); //Giving a 0 signal to stop all motors
   analogWrite(Motor4,0); //Giving a 0 signal to stop all motors
 
-  pinMode(Battery_Connection, INPUT_ANALOG); // Initializing Battery Connection Pin for Voltage Measurement
+ // pinMode(Battery_Connection, INPUT_ANALOG); // Initializing Battery Connection Pin for Voltage Measurement
+ analogRead(Battery_Connection);
   pinMode(LED, OUTPUT); //Initialing LED 
 
   Wire.begin(SDA,SCL);
@@ -250,51 +251,6 @@ Serial.println("Welcome");
     clockspeed_ok = 1;            //Set clockspeed_ok to 1
   #endif                          //End of if statement
 
-  if(TWBR == 12 && clockspeed_ok){
-    Serial.println(F("I2C clock speed is set to 400kHz."));
-  }
-  else{
-    Serial.println(F("I2C clock speed is set to 100kHz. "));
-    error = 0;
-  }
-  
-
-
-  //Quit the program in case of an error
-  if(error == 0){
-    delay(2000);
-    Serial.println(F("Place all sticks and subtrims in the center position within 5 seconds."));
-    for(int i = 5;i > 0;i--){
-      delay(1000);
-      Serial.print(i);
-      Serial.print(" ");
-    }
-    Serial.println(" ");
-    //Store the central stick positions
-    center_channel_1 = ppm[0];
-    center_channel_2 = ppm[1];
-    center_channel_3 = ppm[2];
-    center_channel_4 = ppm[3];
-    Serial.println(F(""));
-    Serial.println(F("Center positions stored."));
-    Serial.print(F("Row"));
-    Serial.println(ppm[0]);
-    Serial.print(F("Pitch "));
-    Serial.println(ppm[1]);
-    Serial.print(F("Throttle "));
-    Serial.println(ppm[2]);
-    Serial.print(F("Yaw "));
-    Serial.println(ppm[3]);
-    Serial.println(F("Enter to countinue."));
-    Serial.read();
-  } 
-//=======================================================================
-
-  
-
-
-
-
   if(error == 0){
     //What gyro is connected
     Serial.println(F(""));
@@ -395,19 +351,19 @@ Serial.println("Welcome");
       angle_roll += gyro_roll * 0.0000611;                                         //Total Angle travelled by Gyro
     acc_total_vector = sqrt((acc_x*acc_x)+(acc_y*acc_y)+(acc_z*acc_z));  //Calculate the total accelerometer vector
   //The Arduino asin function is in radians, so converting to degrees.
-    angle_pitch_acc = asin((float)acc_y/acc_total_vector[0])* 57.296;       //Calculate the pitch angle
-    angle_roll_acc = asin((float)acc_x/acc_total_vector[0])* -57.296;       //Calculate the roll angle
+    angle_pitch_acc = asin((float)acc_y/acc_total_vector)* 57.296;       //Calculate the pitch angle
+    angle_roll_acc = asin((float)acc_x/acc_total_vector)* -57.296;       //Calculate the roll angle
     
   if(!temp){
-      angle_pitch_acc_temp = angle_pitch_acc;                                              //Accelerometer calibration value for pitch
-      angle_roll_acc_temp = angle_roll_acc; 
+      angle_roll_acc_manual_offset = angle_pitch_acc;                                              //Accelerometer calibration value for pitch
+      angle_pitch_acc_manual_offset = angle_roll_acc; 
       temp = true;
        }
-   angle_pitch_acc -= angle_pitch_acc_temp ;                                              //Accelerometer calibration value for pitch
-   angle_roll_acc -= angle_roll_acc_temp;                                               //Accelerometer calibration value for roll
+   angle_pitch_acc -= angle_roll_acc_manual_offset ;                                              //Accelerometer calibration value for pitch
+   angle_roll_acc -= angle_pitch_acc_manual_offset;                                               //Accelerometer calibration value for roll
   //Using Filter to Dampen the Angle
-angle_pitch_output = angle_pitch_output * 0.75 + angle_pitch * 0.25;   //Take 90% of the output pitch value and add 10% of the raw pitch value
-  angle_roll_output = angle_roll_output * 0.9 + angle_roll * 0.1;      //Take 90% of the output roll value and add 10% of the raw roll value
+ // angle_pitch_output = angle_pitch_output * 0.75 + angle_pitch * 0.25;   //Take 90% of the output pitch value and add 10% of the raw pitch value
+ // angle_roll_output = angle_roll_output * 0.9 + angle_roll * 0.1;      //Take 90% of the output roll value and add 10% of the raw roll value
      Serial.println("Are the values without moving the quadcopter 0.");
     Serial.println("If not re run the calibration of gyro and don't move.");
     Serial.println("Move the quadcopter/IMU around to check change in angles.");
@@ -420,7 +376,7 @@ angle_pitch_output = angle_pitch_output * 0.75 + angle_pitch * 0.25;   //Take 90
    Serial.print(" Roll: ");
    Serial.print(angle_roll ,0);
    Serial.print(" Yaw: ");
-   Serial.println(gyro_z / 65.5 ,0);
+   Serial.println(gyro_yaw / 65.5 ,0);
  }
 
     Serial.println(".....");
@@ -516,8 +472,8 @@ angle_pitch_output = angle_pitch_output * 0.75 + angle_pitch * 0.25;   //Take 90
     Serial.println(F("Writing EEPROM"));
     delay(1000);
     Serial.println(F("Done!"));
-    EEPROM.write(26,angle_roll_acc_temp);
-    EEPROM.write(27,angle_pitch_acc_temp)
+    EEPROM.write(26,angle_pitch_acc_manual_offset);
+    EEPROM.write(27,angle_roll_acc_manual_offset);
     EEPROM.write(28, roll_axis);
     EEPROM.write(29, pitch_axis);
     EEPROM.write(30, yaw_axis);
@@ -551,8 +507,6 @@ angle_pitch_output = angle_pitch_output * 0.75 + angle_pitch * 0.25;   //Take 90
     Serial.println(F("Setup is finished."));
     Serial.println(F("You can now calibrate the esc's and upload the Calibration code."));
   }
-}
-
 
 
 //==============================================================
@@ -644,4 +598,56 @@ void gyro_signalen(){
     gyro_yaw=Wire.read()<<8|Wire.read();                         //Read high and low part of the angular data
     if(cal_int == 2000)gyro_yaw -= gyro_yaw_cal;                 //Only compensate after the calibration
   }
+}
+
+void check_gyro_axes(byte movement){
+  byte trigger_axis = 0;
+  float gyro_angle_roll, gyro_angle_pitch, gyro_angle_yaw;
+  //Reset all axes
+  gyro_angle_roll = 0;
+  gyro_angle_pitch = 0;
+  gyro_angle_yaw = 0;
+  gyro_signalen();
+  timer = millis() + 10000;    
+  while(timer > millis() && gyro_angle_roll > -30 && gyro_angle_roll < 30 && gyro_angle_pitch > -30 && gyro_angle_pitch < 30 && gyro_angle_yaw > -30 && gyro_angle_yaw < 30){
+    gyro_signalen();
+    if(type == 2 || type == 3){
+      gyro_angle_roll += gyro_roll * 0.00007;              //0.00007 = 17.5 (md/s) / 250(Hz)
+      gyro_angle_pitch += gyro_pitch * 0.00007;
+      gyro_angle_yaw += gyro_yaw * 0.00007;
+    }
+    if(type == 1){
+      gyro_angle_roll += gyro_roll * 0.0000611;          // 0.0000611 = 1 / 65.5 (LSB degr/s) / 250(Hz)
+      gyro_angle_pitch += gyro_pitch * 0.0000611;
+      gyro_angle_yaw += gyro_yaw * 0.0000611;
+    }
+    
+    delayMicroseconds(3700); //Loop is running @ 250Hz. +/-300us is used for communication with the gyro
+  }
+  //Assign the moved axis to the orresponding function (pitch, roll, yaw)
+  if((gyro_angle_roll < -30 || gyro_angle_roll > 30) && gyro_angle_pitch > -30 && gyro_angle_pitch < 30 && gyro_angle_yaw > -30 && gyro_angle_yaw < 30){
+    gyro_check_byte |= 0b00000001;
+    if(gyro_angle_roll < 0)trigger_axis = 0b10000001;
+    else trigger_axis = 0b00000001;
+  }
+  if((gyro_angle_pitch < -30 || gyro_angle_pitch > 30) && gyro_angle_roll > -30 && gyro_angle_roll < 30 && gyro_angle_yaw > -30 && gyro_angle_yaw < 30){
+    gyro_check_byte |= 0b00000010;
+    if(gyro_angle_pitch < 0)trigger_axis = 0b10000010;
+    else trigger_axis = 0b00000010;
+  }
+  if((gyro_angle_yaw < -30 || gyro_angle_yaw > 30) && gyro_angle_roll > -30 && gyro_angle_roll < 30 && gyro_angle_pitch > -30 && gyro_angle_pitch < 30){
+    gyro_check_byte |= 0b00000100;
+    if(gyro_angle_yaw < 0)trigger_axis = 0b10000011;
+    else trigger_axis = 0b00000011;
+  }
+  
+  if(trigger_axis == 0){
+    error = 1;
+    Serial.println(F("No angular motion is detected in the last 10 seconds!!! (ERROR 4)"));
+  }
+  else
+  if(movement == 1)roll_axis = trigger_axis;
+  if(movement == 2)pitch_axis = trigger_axis;
+  if(movement == 3)yaw_axis = trigger_axis;
+  
 }
