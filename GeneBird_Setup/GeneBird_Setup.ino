@@ -472,17 +472,18 @@ Serial.println("Welcome");
     Serial.println(F("Writing EEPROM"));
     delay(1000);
     Serial.println(F("Done!"));
-    EEPROM.write(26,angle_pitch_acc_manual_offset);
-    EEPROM.write(27,angle_roll_acc_manual_offset);
-    EEPROM.write(28, roll_axis);
-    EEPROM.write(29, pitch_axis);
-    EEPROM.write(30, yaw_axis);
-    EEPROM.write(31, type);
-    EEPROM.write(32, gyro_address);
+    EEPROM.write(0,angle_pitch_acc_manual_offset);
+    EEPROM.write(1,angle_roll_acc_manual_offset);
+    EEPROM.write(2, roll_axis);
+    EEPROM.write(3, pitch_axis);
+    EEPROM.write(4, yaw_axis);
+    EEPROM.write(5, type);
+    EEPROM.write(6, gyro_address);
     //Write the EEPROM signature
-    EEPROM.write(33, 'J'); 
-    EEPROM.write(34, 'M');
-    EEPROM.write(35, 'B');
+    EEPROM.write(7, 'N'); 
+    EEPROM.write(8, 'O');
+    EEPROM.write(9, 'O');
+    EEPROM.write(10, 'R');
         
     
     //To make sure evrything is ok, verify the EEPROM data.
