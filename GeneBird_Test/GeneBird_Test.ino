@@ -371,6 +371,8 @@ void EEPROM_READ_DATA(){
     {
         EEPROM_READ[i] = EEPROM.read(i);
     }
+    angle_pitch_acc_manual_offset = EEPROM_READ[0];
+    angle_roll_acc_manual_offset = EEPROM_READ[1];
     roll_axis = EEPROM_READ[2];
     pitch_axis = EEPROM_READ[3];
     yaw_axis = EEPROM_READ[4];
