@@ -135,8 +135,8 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length
 }
 
 void setup() {
-  Serial.begin(57600); //Serial Monitor Display
-
+  Serial.begin(115200); //Serial Monitor Display
+  
   pinMode(Motor1,OUTPUT); //Initialing PWM output for Motor Control Pins 
   pinMode(Motor2,OUTPUT); //Initialing PWM output for Motor Control Pins
   pinMode(Motor3,OUTPUT); //Initialing PWM output for Motor Control Pins
@@ -152,8 +152,7 @@ void setup() {
   pinMode(LED, OUTPUT); //Initialing LED 
 
   Wire.begin(SDA,SCL);
-  Wire.setClock (I2C_Speed);          //I2C Initiliazination
-    EEPROM_READ_DATA();
+ // Wire.setClock (I2C_Speed);          //I2C Initiliazination
   delay(250);
 
 
@@ -225,8 +224,9 @@ void setup() {
     ppm[i]= CHANNEL_DEFAULT_VALUE;
   }
   interrupts();
-  Serial.begin(115200);
   msp.begin(Serial);
+  EEPROM.begin(512);
+  EEPROM_READ_DATA();
 }
 
 unsigned long time_now = 0;
@@ -238,10 +238,6 @@ unsigned long time_now = 0;
 
 void loop() {
 Serial.println("Welcome User");
-  
-  #if F_CPU == 16000000L          //If the clock speed is 16MHz include the next code line when compiling
-    clockspeed_ok = 1;            //Set clockspeed_ok to 1
-  #endif                          //End of if statement
 //==============================================================
   webSocket.loop();
 //  ArduinoOTA.handle();
@@ -314,62 +310,11 @@ void gyro_signalen(){
   }
 }
 
-void check_gyro_axes(byte movement){
-  byte trigger_axis = 0;
-  float gyro_angle_roll, gyro_angle_pitch, gyro_angle_yaw;
-  //Reset all axes
-  gyro_angle_roll = 0;
-  gyro_angle_pitch = 0;
-  gyro_angle_yaw = 0;
-  gyro_signalen();
-  timer = millis() + 10000;    
-  while(timer > millis() && gyro_angle_roll > -30 && gyro_angle_roll < 30 && gyro_angle_pitch > -30 && gyro_angle_pitch < 30 && gyro_angle_yaw > -30 && gyro_angle_yaw < 30){
-    gyro_signalen();
-    if(type == 2 || type == 3){
-      gyro_angle_roll += gyro_roll * 0.00007;              //0.00007 = 17.5 (md/s) / 250(Hz)
-      gyro_angle_pitch += gyro_pitch * 0.00007;
-      gyro_angle_yaw += gyro_yaw * 0.00007;
-    }
-    if(type == 1){
-      gyro_angle_roll += gyro_roll * 0.0000611;          // 0.0000611 = 1 / 65.5 (LSB degr/s) / 250(Hz)
-      gyro_angle_pitch += gyro_pitch * 0.0000611;
-      gyro_angle_yaw += gyro_yaw * 0.0000611;
-    }
-    
-    delayMicroseconds(3700); //Loop is running @ 250Hz. +/-300us is used for communication with the gyro
-  }
-  //Assign the moved axis to the orresponding function (pitch, roll, yaw)
-  if((gyro_angle_roll < -30 || gyro_angle_roll > 30) && gyro_angle_pitch > -30 && gyro_angle_pitch < 30 && gyro_angle_yaw > -30 && gyro_angle_yaw < 30){
-    gyro_check_byte |= 0b00000001;
-    if(gyro_angle_roll < 0)trigger_axis = 0b10000001;
-    else trigger_axis = 0b00000001;
-  }
-  if((gyro_angle_pitch < -30 || gyro_angle_pitch > 30) && gyro_angle_roll > -30 && gyro_angle_roll < 30 && gyro_angle_yaw > -30 && gyro_angle_yaw < 30){
-    gyro_check_byte |= 0b00000010;
-    if(gyro_angle_pitch < 0)trigger_axis = 0b10000010;
-    else trigger_axis = 0b00000010;
-  }
-  if((gyro_angle_yaw < -30 || gyro_angle_yaw > 30) && gyro_angle_roll > -30 && gyro_angle_roll < 30 && gyro_angle_pitch > -30 && gyro_angle_pitch < 30){
-    gyro_check_byte |= 0b00000100;
-    if(gyro_angle_yaw < 0)trigger_axis = 0b10000011;
-    else trigger_axis = 0b00000011;
-  }
-  
-  if(trigger_axis == 0){
-    error = 1;
-    Serial.println(F("No angular motion is detected in the last 10 seconds!!! (ERROR 4)"));
-  }
-  else
-  if(movement == 1)roll_axis = trigger_axis;
-  if(movement == 2)pitch_axis = trigger_axis;
-  if(movement == 3)yaw_axis = trigger_axis;
-  
-}
-
 void EEPROM_READ_DATA(){
     for(int i = 0; i< 11; i++)
     {
         EEPROM_READ[i] = EEPROM.read(i);
+        yield();
     }
     angle_pitch_acc_manual_offset = EEPROM_READ[0];
     angle_roll_acc_manual_offset = EEPROM_READ[1];
@@ -381,7 +326,7 @@ void EEPROM_READ_DATA(){
     if((EEPROM_READ[7] != 'N') || (EEPROM_READ[8] != 'O') || (EEPROM_READ[9] != 'O') || (EEPROM_READ[10] != 'R'))
     {
         Serial.println("Please Run Setup Program first.");
-        while(1);
+        while(1){yield();}
     }
 }
 
@@ -396,8 +341,9 @@ void Menu(){
     Serial.println("TO       ---quit----         Please input 'q' in serial monitor. ");
     Serial.println("......... ");
     if(Serial.available() >0 ){
+      
         Menu_Input = Serial.read();
-        delay(30);
+        yield();
     }
     Check();
 }
@@ -424,7 +370,8 @@ void Check(){
         Motor_Check(4);
         break;
     case 'q':
-        while(1);
+        Serial.println("Flash the Flight controlller firmware and enjoy");
+        while(1){yield();}
         break;
 
     default:
@@ -437,7 +384,7 @@ void Signals_Check(){
       Serial.println(F("System check :-Channels"));
       Serial.println("Please Input q to exit.");
       Serial.println(F("==================================================="));
-    do{
+   while(Serial.read()!='q' || Serial.read()!='Q'){
     if(Serial.available() >0 ){
         Menu_Input = Serial.read();
         delay(30);
@@ -450,7 +397,8 @@ void Signals_Check(){
         Serial.print('\t Channel 6');  Serial.print(ppm[5]);
         Serial.print('\t Channel 7');  Serial.print(ppm[6]);
         Serial.print('\t Channel 8');  Serial.println(ppm[7]);
-    }while(Menu_Input != 'q');
+    yield();
+    }
 }
 
 void Gyro_Check(){
@@ -459,12 +407,8 @@ void Gyro_Check(){
   Serial.println("Please Input q to exit.");
   Serial.println(F("==================================================="));
   delay(100);
-        do{
-    if(Serial.available() >0 ){
-        Menu_Input = Serial.read();
-        delay(30);
-        }
-
+ while(Serial.read()!='q' || Serial.read()!='Q'){
+    
     gyro_signalen();
      angle_pitch += gyro_pitch * 0.0000611;                                          //Total Angle travelled by Gyro 
       angle_roll += gyro_roll * 0.0000611;                                         //Total Angle travelled by Gyro
@@ -481,8 +425,8 @@ void Gyro_Check(){
     Serial.print("Pitch: ");  Serial.print(angle_pitch ,0);
     Serial.print(" Roll: ");  Serial.print(angle_roll ,0);
     Serial.print(" Yaw: ");   Serial.println(gyro_yaw / 65.5 ,0);
-
-    }while(Menu_Input != 'q');
+      yield();
+    }
 
 }
 
@@ -490,11 +434,7 @@ void Motor_Check(uint8_t motor){
      Serial.println(F("System check :-Motor_Check"));
      Serial.println("Please Input q to exit.");
     Serial.println(F("==================================================="));
-    do{
-    if(Serial.available() >0 ){
-        Menu_Input = Serial.read();
-        delay(30);
-        }
+    while(Serial.read()!='q' || Serial.read()!='Q'){
      manual_throttle = map(manual_throttle,Max_throttle,Min_throttle,0,255);
      switch (motor)
      {
@@ -513,7 +453,7 @@ void Motor_Check(uint8_t motor){
      default:
          break;
      }
-    }while(Menu_Input != 'q');
+    }
 
     analogWrite(Motor1,0);
     analogWrite(Motor2,0);

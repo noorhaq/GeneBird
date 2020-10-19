@@ -16,11 +16,12 @@
 #include "config.h"
 #include <Arduino.h>
 
+
 volatile unsigned long next;
 volatile unsigned int ppm_running=1;
 
 boolean Gyro_Temp = false;
-int32_t angle_roll_acc_manual_offset , angle_pitch_acc_manual_offset;
+byte angle_roll_acc_manual_offset , angle_pitch_acc_manual_offset;
 //=================================================
 //********************Variables
 //=================================================
@@ -134,8 +135,8 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length
 }
 
 void setup() {
-  Serial.begin(57600); //Serial Monitor Display
-
+  Serial.begin(115200); //Serial Monitor Display
+  
   pinMode(Motor1,OUTPUT); //Initialing PWM output for Motor Control Pins 
   pinMode(Motor2,OUTPUT); //Initialing PWM output for Motor Control Pins
   pinMode(Motor3,OUTPUT); //Initialing PWM output for Motor Control Pins
@@ -151,7 +152,7 @@ void setup() {
   pinMode(LED, OUTPUT); //Initialing LED 
 
   Wire.begin(SDA,SCL);
-  Wire.setClock (I2C_Speed);          //I2C Initiliazination
+ // Wire.setClock (I2C_Speed);          //I2C Initiliazination
 
   delay(250);
 
@@ -224,8 +225,10 @@ void setup() {
     ppm[i]= CHANNEL_DEFAULT_VALUE;
   }
   interrupts();
-  Serial.begin(115200);
   msp.begin(Serial);
+
+  
+
 }
 
 unsigned long time_now = 0;
@@ -304,7 +307,7 @@ Serial.println("Welcome");
     Serial.println(F("==================================================="));
     Serial.println(F("Don't move the quadcopter!! Calibration starts in 3 seconds"));
     delay(3000);
-    Serial.println(F("Calibrating the gyro, this will take +/- 8 seconds"));
+    Serial.println(F("Calibrating the gyro"));
     Serial.print(F("Please wait"));
     //Let's take multiple gyro data samples so we can determine the average gyro offset (calibration).
    for (int i =0; i < 100 ; i++){              //Take 2000 readings for calibration.
@@ -318,7 +321,7 @@ Serial.println("Welcome");
       gyro_roll_cal += gyro_roll;                                //Ad roll value to gyro_roll_cal.
       gyro_pitch_cal += gyro_pitch;                              //Ad pitch value to gyro_pitch_cal.
       gyro_yaw_cal += gyro_yaw;                                  //Ad yaw value to gyro_yaw_cal.
-      delay(3);                                                  //Wait 3 milliseconds before the next loop.
+      yield();                                                  //Wait 3 milliseconds before the next loop.
     }
     //Calculating average offset.
     gyro_roll_cal /= Gyro_Calib_offset;                                       //Divide the roll total by 2000.
@@ -369,7 +372,7 @@ Serial.println("Welcome");
     Serial.println("Move the quadcopter/IMU around to check change in angles.");
     Serial.println("....."); 
     Serial.println(F("Press A to countinue and 100 Gyro values will be printed. "));
-      while(Serial.read()!='a');
+      while(Serial.read()!='a'){yield();}
  for(int i =0; i< 100; i++){
    Serial.print("Pitch: ");
    Serial.print(angle_pitch ,0);
@@ -397,14 +400,13 @@ Serial.println("Welcome");
       else Serial.println(F("Axis inverted = no"));
       Serial.println(F("Put the quadcopter back in its original position"));
       Serial.println(F("Press A to countinue. "));
-      while(Serial.read()!='a');
+      while(Serial.read()!='a'){yield();}
 
       //Detect the nose up movement
       Serial.println(F(""));
       Serial.println(F(""));
-      Serial.println(F("Lift the nose of the quadcopter to a 45 degree angle within 10 seconds"));
-      Serial.println(F("Press A to countinue. "));
-      while(Serial.read()!='a');
+      Serial.println(F("Lift the nose of the quadcopter to a 45 degree angle"));
+      check_gyro_axes(2);
     }
     if(error == 0){
       Serial.println(F("OK!"));
@@ -414,12 +416,12 @@ Serial.println("Welcome");
       else Serial.println(F("Axis inverted = no"));
       Serial.println(F("Put the quadcopter back in its original position"));
       Serial.println(F("Press A to countinue. "));
-      while(Serial.read()!='a');
+      while(Serial.read()!='a'){yield();}
       
       //Detect the nose right movement
       Serial.println(F(""));
       Serial.println(F(""));
-      Serial.println(F("Rotate the nose of the quadcopter 45 degree to the right within 10 seconds"));
+      Serial.println(F("Rotate the nose of the quadcopter 45 degree to the right"));
       //Check axis movement
       check_gyro_axes(3);
     }
@@ -431,7 +433,7 @@ Serial.println("Welcome");
       else Serial.println(F("Axis inverted = no"));
       Serial.println(F("Put the quadcopter back in its original position"));
      Serial.println(F("Press A to countinue. "));
-      while(Serial.read()!='a');
+      while(Serial.read()!='a'){yield();}
       
     }
   }
@@ -443,7 +445,7 @@ Serial.println("Welcome");
     digitalWrite(12, HIGH);
     Serial.println(F("The LED should now be lit"));
     Serial.println(F("Press A to countinue. "));
-      while(Serial.read()!='a');
+      while(Serial.read()!='a'){yield();}
         digitalWrite(12, LOW);
   }
   
@@ -458,7 +460,7 @@ Serial.println("Welcome");
       Serial.println(F("Gyro axes ok"));
     }
     else{
-      Serial.println(F("Gyro exes verification failed!!! (ERROR 7)"));
+      Serial.println(F("Gyro axes verification failed!!! (ERROR 7)"));
       error = 1;
     }
   }     
@@ -470,21 +472,32 @@ Serial.println("Welcome");
     Serial.println(F("Storing EEPROM information"));
     Serial.println(F("==================================================="));
     Serial.println(F("Writing EEPROM"));
-    delay(1000);
-    Serial.println(F("Done!"));
+EEPROM.begin(255);
     EEPROM.write(0,angle_pitch_acc_manual_offset);
-    EEPROM.write(1,angle_roll_acc_manual_offset);
-    EEPROM.write(2, roll_axis);
+Serial.println('1');
+    EEPROM.write(1,angle_roll_acc_manual_offset); 
+Serial.println('2');
+    EEPROM.write(2, roll_axis); 
+Serial.println('3');
     EEPROM.write(3, pitch_axis);
-    EEPROM.write(4, yaw_axis);
-    EEPROM.write(5, type);
-    EEPROM.write(6, gyro_address);
+Serial.println('4');
+    EEPROM.write(4, yaw_axis); 
+Serial.println('5');
+    EEPROM.write(5, type);  
+Serial.println('6');
+    EEPROM.write(6, gyro_address); 
+Serial.println('7');
     //Write the EEPROM signature
-    EEPROM.write(7, 'N'); 
-    EEPROM.write(8, 'O');
-    EEPROM.write(9, 'O');
-    EEPROM.write(10, 'R');
-        
+    EEPROM.write(7, 'N');  
+//Serial.println('8');
+//    EEPROM.write(8, 'O');  
+//Serial.println('9');
+//    EEPROM.write(9, 'O'); 
+//Serial.println('10');
+//    EEPROM.write(10, 'R');
+    Serial.println('1');  EEPROM_Commit();
+        delay(1000);
+    Serial.println(F("Done!"));
     
     //To make sure evrything is ok, verify the EEPROM data.
     Serial.println(F("Verify EEPROM data"));
@@ -501,13 +514,14 @@ Serial.println("Welcome");
   
     if(error == 1)Serial.println(F("EEPROM verification failed!!! (ERROR )"));
     else Serial.println(F("Verification done"));
+    
   }
   
   
   if(error == 0){
     Serial.println(F("Setup is finished."));
   }
-
+ while(Serial.read()!='a'){yield();}  
 
 //==============================================================
   webSocket.loop();
@@ -608,9 +622,10 @@ void check_gyro_axes(byte movement){
   gyro_angle_pitch = 0;
   gyro_angle_yaw = 0;
   gyro_signalen();
-  timer = millis() + 10000;    
-  while(timer > millis() && gyro_angle_roll > -30 && gyro_angle_roll < 30 && gyro_angle_pitch > -30 && gyro_angle_pitch < 30 && gyro_angle_yaw > -30 && gyro_angle_yaw < 30){
+ // timer = millis() + 10000;    
+  while( gyro_angle_roll > -30 && gyro_angle_roll < 30 && gyro_angle_pitch > -30 && gyro_angle_pitch < 30 && gyro_angle_yaw > -30 && gyro_angle_yaw < 30){
     gyro_signalen();
+    yield();
     if(type == 2 || type == 3){
       gyro_angle_roll += gyro_roll * 0.00007;              //0.00007 = 17.5 (md/s) / 250(Hz)
       gyro_angle_pitch += gyro_pitch * 0.00007;
@@ -622,7 +637,7 @@ void check_gyro_axes(byte movement){
       gyro_angle_yaw += gyro_yaw * 0.0000611;
     }
     
-    delayMicroseconds(3700); //Loop is running @ 250Hz. +/-300us is used for communication with the gyro
+    delayMicroseconds(3700); //Loop is running
   }
   //Assign the moved axis to the orresponding function (pitch, roll, yaw)
   if((gyro_angle_roll < -30 || gyro_angle_roll > 30) && gyro_angle_pitch > -30 && gyro_angle_pitch < 30 && gyro_angle_yaw > -30 && gyro_angle_yaw < 30){
@@ -643,11 +658,17 @@ void check_gyro_axes(byte movement){
   
   if(trigger_axis == 0){
     error = 1;
-    Serial.println(F("No angular motion is detected in the last 10 seconds!!! (ERROR 4)"));
+    Serial.println(F("No angular motion is detected."));
   }
   else
   if(movement == 1)roll_axis = trigger_axis;
   if(movement == 2)pitch_axis = trigger_axis;
   if(movement == 3)yaw_axis = trigger_axis;
   
+}
+void EEPROM_Commit()
+{
+ //Serial.printf("Commit %s\n", EEPROM.commit() ? "OK" : "KO");
+  EEPROM.end();
+  delay(100);
 }

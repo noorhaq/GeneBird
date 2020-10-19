@@ -28,7 +28,7 @@
 #define PULSE_LENGTH 300  //set the pulse length
 #define onState 0  //set polarity of the pulses: 1 is positive, 0 is negative
 
-#define  DEBUGPIN  4
+#define  DEBUGPIN  1
 
 
 //WIFI Configuration
@@ -77,7 +77,7 @@ int pid_max_yaw = 400;                     //Maximum output of the PID-controlle
 //*****************************IMU Settings
 //=================================================
 
-uint8_t gyro_address = 0x68; //For MPU 6050
+byte gyro_address = 0x68; //For MPU 6050
 
 float low_battery_warn = 9.5; //Can be set for any value
 
