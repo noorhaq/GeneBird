@@ -15,19 +15,19 @@
 #include <EEPROM.h>
 #include "config.h"
 #include <Arduino.h>
-
+#include <ArduinoOTA.h>
 
 volatile unsigned long next;
 volatile unsigned int ppm_running=1;
 
 boolean Gyro_Temp = false;
-byte angle_roll_acc_manual_offset , angle_pitch_acc_manual_offset;
+byte angle_roll_acc_manual_offset , angle_pitch_acc_manual_offset, roll_axis;
 //=================================================
 //********************Variables
 //=================================================
 int ppm[CHANNEL_NUMBER];
 byte lowByte, highByte, type, clockspeed_ok;
-byte roll_axis, pitch_axis, yaw_axis;
+byte  pitch_axis, yaw_axis;
 byte receiver_check_byte, gyro_check_byte;
 int address;
 unsigned long timer, timer_1, timer_2, timer_3, timer_4, current_time;
@@ -134,9 +134,126 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length
 
 }
 
+byte search_gyro(int gyro_address, int who_am_i){
+  Wire.beginTransmission(gyro_address);
+  Wire.write(who_am_i);
+  Wire.endTransmission();
+  Wire.requestFrom(gyro_address, 1);
+  timer = millis() + 100;
+  while(Wire.available() < 1 && timer > millis());
+  lowByte = Wire.read();
+  address = gyro_address;
+  return lowByte;
+}
+
+void start_gyro(){
+  //Setup the L3G4200D or L3GD20H
+  //Setup the MPU-6050
+  if(type == 1){
+    
+    Wire.beginTransmission(address);                             //Start communication with the gyro
+    Wire.write(0x6B);                                            //PWR_MGMT_1 register
+    Wire.write(0x00);                                            //Set to zero to turn on the gyro
+    Wire.endTransmission();                                      //End the transmission
+    
+    Wire.beginTransmission(address);                             //Start communication with the gyro
+    Wire.write(0x6B);                                            //Start reading @ register 28h and auto increment with every read
+    Wire.endTransmission();                                      //End the transmission
+    Wire.requestFrom(address, 1);                                //Request 1 bytes from the gyro
+    while(Wire.available() < 1);                                 //Wait until the 1 byte is received
+    Serial.print(("Register 0x6B is set to:"));
+    Serial.println(Wire.read(),BIN);
+    
+    Wire.beginTransmission(address);                             //Start communication with the gyro
+    Wire.write(0x1B);                                            //GYRO_CONFIG register
+    Wire.write(0x08);                                            //Set the register bits as 00001000 (500dps full scale)
+    Wire.endTransmission();                                      //End the transmission
+    
+    Wire.beginTransmission(address);                             //Start communication with the gyro (adress 1101001)
+    Wire.write(0x1B);                                            //Start reading @ register 28h and auto increment with every read
+    Wire.endTransmission();                                      //End the transmission
+    Wire.requestFrom(address, 1);                                //Request 1 bytes from the gyro
+    while(Wire.available() < 1);                                 //Wait until the 1 byte is received
+    Serial.print(("Register 0x1B is set to:"));
+    Serial.println(Wire.read(),BIN);
+
+  }
+}
+
+void gyro_signalen(){
+  if(type == 1){
+    Wire.beginTransmission(address);                             //Start communication with the gyro
+    Wire.write(0x43);                                            //Start reading @ register 43h and auto increment with every read
+    Wire.endTransmission();                                      //End the transmission
+    Wire.requestFrom(address,6);                                 //Request 6 bytes from the gyro
+    while(Wire.available() < 6);                                 //Wait until the 6 bytes are received
+    gyro_roll=Wire.read()<<8|Wire.read();                        //Read high and low part of the angular data
+    if(cal_int == 2000)gyro_roll -= gyro_roll_cal;               //Only compensate after the calibration
+    gyro_pitch=Wire.read()<<8|Wire.read();                       //Read high and low part of the angular data
+    if(cal_int == 2000)gyro_pitch -= gyro_pitch_cal;             //Only compensate after the calibration
+    gyro_yaw=Wire.read()<<8|Wire.read();                         //Read high and low part of the angular data
+    if(cal_int == 2000)gyro_yaw -= gyro_yaw_cal;                 //Only compensate after the calibration
+  }
+}
+
+void check_gyro_axes(byte movement){
+  byte trigger_axis = 0;
+  float gyro_angle_roll, gyro_angle_pitch, gyro_angle_yaw;
+  //Reset all axes
+  gyro_angle_roll = 0;
+  gyro_angle_pitch = 0;
+  gyro_angle_yaw = 0;
+  gyro_signalen();
+ // timer = millis() + 10000;    
+  while( gyro_angle_roll > -30 && gyro_angle_roll < 30 && gyro_angle_pitch > -30 && gyro_angle_pitch < 30 && gyro_angle_yaw > -30 && gyro_angle_yaw < 30){
+    gyro_signalen();
+    yield();
+    if(type == 2 || type == 3){
+      gyro_angle_roll += gyro_roll * 0.00007;              //0.00007 = 17.5 (md/s) / 250(Hz)
+      gyro_angle_pitch += gyro_pitch * 0.00007;
+      gyro_angle_yaw += gyro_yaw * 0.00007;
+    }
+    if(type == 1){
+      gyro_angle_roll += gyro_roll * 0.0000611;          // 0.0000611 = 1 / 65.5 (LSB degr/s) / 250(Hz)
+      gyro_angle_pitch += gyro_pitch * 0.0000611;
+      gyro_angle_yaw += gyro_yaw * 0.0000611;
+    }
+    
+    delayMicroseconds(3700); //Loop is running
+  }
+  //Assign the moved axis to the orresponding function (pitch, roll, yaw)
+  if((gyro_angle_roll < -30 || gyro_angle_roll > 30) && gyro_angle_pitch > -30 && gyro_angle_pitch < 30 && gyro_angle_yaw > -30 && gyro_angle_yaw < 30){
+    gyro_check_byte |= 0b00000001;
+    if(gyro_angle_roll < 0)trigger_axis = 0b10000001;
+    else trigger_axis = 0b00000001;
+  }
+  if((gyro_angle_pitch < -30 || gyro_angle_pitch > 30) && gyro_angle_roll > -30 && gyro_angle_roll < 30 && gyro_angle_yaw > -30 && gyro_angle_yaw < 30){
+    gyro_check_byte |= 0b00000010;
+    if(gyro_angle_pitch < 0)trigger_axis = 0b10000010;
+    else trigger_axis = 0b00000010;
+  }
+  if((gyro_angle_yaw < -30 || gyro_angle_yaw > 30) && gyro_angle_roll > -30 && gyro_angle_roll < 30 && gyro_angle_pitch > -30 && gyro_angle_pitch < 30){
+    gyro_check_byte |= 0b00000100;
+    if(gyro_angle_yaw < 0)trigger_axis = 0b10000011;
+    else trigger_axis = 0b00000011;
+  }
+  
+  if(trigger_axis == 0){
+    error = 1;
+    Serial.println(("No angular motion is detected."));
+  }
+  else
+  if(movement == 1)roll_axis = trigger_axis;
+  if(movement == 2)pitch_axis = trigger_axis;
+  if(movement == 3)yaw_axis = trigger_axis;
+  
+}
+
+//===========================================================
+//===========================
 void setup() {
   Serial.begin(115200); //Serial Monitor Display
-  
+  EEPROM.begin(512);
   pinMode(Motor1,OUTPUT); //Initialing PWM output for Motor Control Pins 
   pinMode(Motor2,OUTPUT); //Initialing PWM output for Motor Control Pins
   pinMode(Motor3,OUTPUT); //Initialing PWM output for Motor Control Pins
@@ -227,8 +344,42 @@ void setup() {
   interrupts();
   msp.begin(Serial);
 
+  //=======================OTA===========
+    ArduinoOTA.begin();
+    ArduinoOTA.onStart([]() {
+    String type;
+    if (ArduinoOTA.getCommand() == U_FLASH) {
+      type = "sketch";
+    } else { // U_FS
+      type = "filesystem";
+    }
+
+    // NOTE: if updating FS this would be the place to unmount FS using FS.end()
+    Serial.println("Start updating " + type);
+  });
+  ArduinoOTA.onEnd([]() {
+    Serial.println("\nEnd");
+  });
+  ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
+    Serial.printf("Progress: %u%%\r", (progress / (total / 100)));
+  });
+  ArduinoOTA.onError([](ota_error_t error) {
+    Serial.printf("Error[%u]: ", error);
+    if (error == OTA_AUTH_ERROR) {
+      Serial.println("Auth Failed");
+    } else if (error == OTA_BEGIN_ERROR) {
+      Serial.println("Begin Failed");
+    } else if (error == OTA_CONNECT_ERROR) {
+      Serial.println("Connect Failed");
+    } else if (error == OTA_RECEIVE_ERROR) {
+      Serial.println("Receive Failed");
+    } else if (error == OTA_END_ERROR) {
+      Serial.println("End Failed");
+    }
+  });
   
 
+Check();
 }
 
 unsigned long time_now = 0;
@@ -239,14 +390,43 @@ unsigned long time_now = 0;
 //**************************************************************
 
 void loop() {
-Serial.println("Welcome");
+ //while(Serial.read()!='a'){ArduinoOTA.handle(); delay(100);}  
+ EEPROM_Commit();
+
+//==============================================================
+  webSocket.loop();
+
+    
+  ArduinoOTA.handle();
+ 
+  if(captive_portal)
+    dnsServer.processNextRequest();
+  server.handleClient();
+     Serial.println();
+     
+  if(alivecount>1000){
+    for(int i=0; i<4;i++){
+      ppm[i]=900;
+    }
+    for(int i=4; i<8;i++){
+      ppm[i]=1100;
+    }
+    
+  }
+ 
+ delay(1000);
+  yield();
+}
+//========================================
+void Check(){
+  Serial.println("Welcome");
   
-  Serial.println(F(""));
-  Serial.println(F("==================================================="));
-  Serial.println(F("System check"));
-  Serial.println(F("==================================================="));
+  Serial.println((""));
+  Serial.println(("==================================================="));
+  Serial.println(("System check"));
+  Serial.println(("==================================================="));
   delay(1000);
-  Serial.println(F("Checking I2C clock speed."));
+  Serial.println(("Checking I2C clock speed."));
   delay(1000);
   
 
@@ -256,25 +436,25 @@ Serial.println("Welcome");
 
   if(error == 0){
     //What gyro is connected
-    Serial.println(F(""));
-    Serial.println(F("==================================================="));
-    Serial.println(F("Gyro search"));
-    Serial.println(F("==================================================="));
+    Serial.println((""));
+    Serial.println(("==================================================="));
+    Serial.println(("Gyro search"));
+    Serial.println(("==================================================="));
     delay(2000);
     
-    Serial.println(F("Searching for MPU-6050 on address 0x68/104"));
+    Serial.println(("Searching for MPU-6050 on address 0x68/104"));
     delay(1000);
     if(search_gyro(0x68, 0x75) == 0x68){
-      Serial.println(F("MPU-6050 found on address 0x68"));
+      Serial.println(("MPU-6050 found on address 0x68"));
       type = 1;
       gyro_address = 0x68;
     }
     
     if(type == 0){
-      Serial.println(F("Searching for MPU-6050 on address 0x69"));
+      Serial.println(("Searching for MPU-6050 on address 0x69"));
       delay(1000);
       if(search_gyro(0x69, 0x75) == 0x68){
-        Serial.println(F("MPU-6050 found on address 0x69"));
+        Serial.println(("MPU-6050 found on address 0x69"));
         type = 1;
         gyro_address = 0x69;
       }
@@ -284,16 +464,16 @@ Serial.println("Welcome");
    
     
     if(type == 0){
-      Serial.println(F("No gyro device found!!! (ERROR )"));
+      Serial.println(("No gyro device found!!! (ERROR )"));
       error = 1;
     }
     
     else{
       delay(3000);
-      Serial.println(F(""));
-      Serial.println(F("==================================================="));
-      Serial.println(F("Gyro register settings"));
-      Serial.println(F("==================================================="));
+      Serial.println((""));
+      Serial.println(("==================================================="));
+      Serial.println(("Gyro register settings"));
+      Serial.println(("==================================================="));
       start_gyro(); //Setup the gyro for further use
     }
   }
@@ -301,22 +481,22 @@ Serial.println("Welcome");
   //If the gyro is found we can setup the correct gyro axes.
   if(error == 0){
     delay(3000);
-    Serial.println(F(""));
-    Serial.println(F("==================================================="));
-    Serial.println(F("Gyro calibration"));
-    Serial.println(F("==================================================="));
-    Serial.println(F("Don't move the quadcopter!! Calibration starts in 3 seconds"));
+    Serial.println((""));
+    Serial.println(("==================================================="));
+    Serial.println(("Gyro calibration"));
+    Serial.println(("==================================================="));
+    Serial.println(("Don't move the quadcopter!! Calibration starts in 3 seconds"));
     delay(3000);
-    Serial.println(F("Calibrating the gyro"));
-    Serial.print(F("Please wait"));
+    Serial.println(("Calibrating the gyro"));
+    Serial.print(("Please wait"));
     //Let's take multiple gyro data samples so we can determine the average gyro offset (calibration).
    for (int i =0; i < 100 ; i++){              //Take 2000 readings for calibration.
-      if(cal_int % 100 == 0)Serial.print(F("."));                //Print dot to indicate calibration.
+      if(cal_int % 100 == 0)Serial.print(("."));                //Print dot to indicate calibration.
       gyro_signalen();                                           //Discarding the first 100 values.
       delay(3);                                                  //Discarding the first 100 values.
     }   
    for (cal_int = 0; cal_int < Gyro_Calib_offset ; cal_int ++){              //Take 2000 readings for calibration.
-      if(cal_int % 100 == 0)Serial.print(F("."));                //Print dot to indicate calibration.
+      if(cal_int % 100 == 0)Serial.print(("."));                //Print dot to indicate calibration.
       gyro_signalen();                                           //Read the gyro output.
       gyro_roll_cal += gyro_roll;                                //Ad roll value to gyro_roll_cal.
       gyro_pitch_cal += gyro_pitch;                              //Ad pitch value to gyro_pitch_cal.
@@ -331,21 +511,21 @@ Serial.println("Welcome");
     gyro_signalen();
     
     //Show the calibration results
-    Serial.println(F(""));
-    Serial.print(F("Axis 1 offset="));
+    Serial.println((""));
+    Serial.print(("Axis 1 offset="));
     Serial.println(gyro_roll_cal);
-    Serial.print(F("Axis 2 offset="));
+    Serial.print(("Axis 2 offset="));
     Serial.println(gyro_pitch_cal);
-    Serial.print(F("Axis 3 offset="));
+    Serial.print(("Axis 3 offset="));
     Serial.println(gyro_yaw_cal);
-    Serial.println(F(""));
+    Serial.println((""));
     
     //Spirit Level Value Calculation
     gyro_signalen();
-    Serial.println(F("Calculating Spirit Level Value of IMU. Don't Move Quadcopter."));
-    Serial.println(F("...."));
-    Serial.println(F("...."));
-    Serial.println(F("...."));
+    Serial.println(("Calculating Spirit Level Value of IMU. Don't Move Quadcopter."));
+    Serial.println(("...."));
+    Serial.println(("...."));
+    Serial.println(("...."));
     gyro_roll -= gyro_roll_cal;
     gyro_pitch -= gyro_pitch_cal;
     gyro_yaw -= gyro_yaw_cal;
@@ -371,7 +551,7 @@ Serial.println("Welcome");
     Serial.println("If not re run the calibration of gyro and don't move.");
     Serial.println("Move the quadcopter/IMU around to check change in angles.");
     Serial.println("....."); 
-    Serial.println(F("Press A to countinue and 100 Gyro values will be printed. "));
+    Serial.println(("Press A to countinue and 100 Gyro values will be printed. "));
       while(Serial.read()!='a'){yield();}
  for(int i =0; i< 100; i++){
    Serial.print("Pitch: ");
@@ -383,292 +563,164 @@ Serial.println("Welcome");
  }
 
     Serial.println(".....");
-    Serial.print(F(""));
-    Serial.println(F("==================================================="));
-    Serial.println(F("Gyro axes configuration"));
-    Serial.println(F("==================================================="));
+    Serial.print((""));
+    Serial.println(("==================================================="));
+    Serial.println(("Gyro axes configuration"));
+    Serial.println(("==================================================="));
     
     //Detect the left wing up movement
-    Serial.println(F("Lift the left side of the quadcopter to a 45 degree angle within 10 seconds"));
+    Serial.println(("Lift the left side of the quadcopter to a 45 degree angle within 10 seconds"));
     //Check axis movement
     check_gyro_axes(1);
     if(error == 0){
-      Serial.println(F("OK!"));
-      Serial.print(F("Angle detection = "));
+      Serial.println(("OK!"));
+      Serial.print(("Angle detection = "));
       Serial.println(roll_axis & 0b00000011);
-      if(roll_axis & 0b10000000)Serial.println(F("Axis inverted = yes"));
-      else Serial.println(F("Axis inverted = no"));
-      Serial.println(F("Put the quadcopter back in its original position"));
-      Serial.println(F("Press A to countinue. "));
+      if(roll_axis & 0b10000000)Serial.println(("Axis inverted = yes"));
+      else Serial.println(("Axis inverted = no"));
+      Serial.println(("Put the quadcopter back in its original position"));
+      Serial.println(("Press A to countinue. "));
       while(Serial.read()!='a'){yield();}
 
       //Detect the nose up movement
-      Serial.println(F(""));
-      Serial.println(F(""));
-      Serial.println(F("Lift the nose of the quadcopter to a 45 degree angle"));
+      Serial.println((""));
+      Serial.println((""));
+      Serial.println(("Lift the nose of the quadcopter to a 45 degree angle"));
       check_gyro_axes(2);
     }
     if(error == 0){
-      Serial.println(F("OK!"));
-      Serial.print(F("Angle detection = "));
+      Serial.println(("OK!"));
+      Serial.print(("Angle detection = "));
       Serial.println(pitch_axis & 0b00000011);
-      if(pitch_axis & 0b10000000)Serial.println(F("Axis inverted = yes"));
-      else Serial.println(F("Axis inverted = no"));
-      Serial.println(F("Put the quadcopter back in its original position"));
-      Serial.println(F("Press A to countinue. "));
+      if(pitch_axis & 0b10000000)Serial.println(("Axis inverted = yes"));
+      else Serial.println(("Axis inverted = no"));
+      Serial.println(("Put the quadcopter back in its original position"));
+      Serial.println(("Press A to countinue. "));
       while(Serial.read()!='a'){yield();}
       
       //Detect the nose right movement
-      Serial.println(F(""));
-      Serial.println(F(""));
-      Serial.println(F("Rotate the nose of the quadcopter 45 degree to the right"));
+      Serial.println((""));
+      Serial.println((""));
+      Serial.println(("Rotate the nose of the quadcopter 45 degree to the right"));
       //Check axis movement
       check_gyro_axes(3);
     }
     if(error == 0){
-      Serial.println(F("OK!"));
-      Serial.print(F("Angle detection = "));
+      Serial.println(("OK!"));
+      Serial.print(("Angle detection = "));
       Serial.println(yaw_axis & 0b00000011);
-      if(yaw_axis & 0b10000000)Serial.println(F("Axis inverted = yes"));
-      else Serial.println(F("Axis inverted = no"));
-      Serial.println(F("Put the quadcopter back in its original position"));
-     Serial.println(F("Press A to countinue. "));
+      if(yaw_axis & 0b10000000)Serial.println(("Axis inverted = yes"));
+      else Serial.println(("Axis inverted = no"));
+      Serial.println(("Put the quadcopter back in its original position"));
+     Serial.println(("Press A to countinue. "));
       while(Serial.read()!='a'){yield();}
       
     }
   }
   if(error == 0){
-    Serial.println(F(""));
-    Serial.println(F("==================================================="));
-    Serial.println(F("LED test"));
-    Serial.println(F("==================================================="));
+    Serial.println((""));
+    Serial.println(("==================================================="));
+    Serial.println(("LED test"));
+    Serial.println(("==================================================="));
     digitalWrite(12, HIGH);
-    Serial.println(F("The LED should now be lit"));
-    Serial.println(F("Press A to countinue. "));
+    Serial.println(("The LED should now be lit"));
+    Serial.println(("Press A to countinue. "));
       while(Serial.read()!='a'){yield();}
         digitalWrite(12, LOW);
   }
   
-  Serial.println(F(""));
+  Serial.println((""));
   
   if(error == 0){
-    Serial.println(F("==================================================="));
-    Serial.println(F("Final setup check"));
-    Serial.println(F("==================================================="));
+    Serial.println(("==================================================="));
+    Serial.println(("Final setup check"));
+    Serial.println(("==================================================="));
     delay(1000);
     if(gyro_check_byte == 0b00000111){
-      Serial.println(F("Gyro axes ok"));
+      Serial.println(("Gyro axes ok"));
     }
     else{
-      Serial.println(F("Gyro axes verification failed!!! (ERROR 7)"));
+      Serial.println(("Gyro axes verification failed!!! (ERROR 7)"));
       error = 1;
     }
   }     
   
-  if(error == 0){
+
+
+  }
+
+
+void EEPROM_Commit()
+{
+ 
+   if(error == 0){
     //If all is good, store the information in the EEPROM
-    Serial.println(F(""));
-    Serial.println(F("==================================================="));
-    Serial.println(F("Storing EEPROM information"));
-    Serial.println(F("==================================================="));
-    Serial.println(F("Writing EEPROM"));
-EEPROM.begin(255);
+    Serial.println((""));
+    Serial.println(("==================================================="));
+    Serial.println(("Storing EEPROM information"));
+    Serial.println(("==================================================="));
+    Serial.println(("Writing EEPROM"));
+
     EEPROM.write(0,angle_pitch_acc_manual_offset);
-Serial.println('1');
+Serial.printf("ANGLE PITCH ACC MANUAL OFFSET : %d \n",angle_pitch_acc_manual_offset);
+  delay(100);
     EEPROM.write(1,angle_roll_acc_manual_offset); 
-Serial.println('2');
+      delay(100);
+Serial.printf("angle_roll_acc_manual_offset : %d \n",angle_roll_acc_manual_offset);
     EEPROM.write(2, roll_axis); 
-Serial.println('3');
+      delay(100); 
+Serial.printf("roll_axis: %d \n",roll_axis);
     EEPROM.write(3, pitch_axis);
-Serial.println('4');
-    EEPROM.write(4, yaw_axis); 
-Serial.println('5');
+          delay(100); 
+Serial.printf("pitch_axis : %d \n",pitch_axis);
+    EEPROM.write(4, yaw_axis);
+          delay(100);  
+Serial.printf("yaw_axis : %d \n",yaw_axis);
+      delay(100); 
     EEPROM.write(5, type);  
-Serial.println('6');
+          delay(100); 
+Serial.printf("type : %d \n", type);
     EEPROM.write(6, gyro_address); 
-Serial.println('7');
+          delay(100); 
+Serial.printf("gyro_address : %d \n",gyro_address);
     //Write the EEPROM signature
     EEPROM.write(7, 'N');  
-//Serial.println('8');
-//    EEPROM.write(8, 'O');  
-//Serial.println('9');
-//    EEPROM.write(9, 'O'); 
-//Serial.println('10');
-//    EEPROM.write(10, 'R');
-    Serial.println('1');  EEPROM_Commit();
+          delay(100); 
+    EEPROM.write(8, 'O');
+          delay(100);   
+    EEPROM.write(9, 'O');
+          delay(100);  
+    EEPROM.write(10, 'R');
+          delay(100); 
         delay(1000);
-    Serial.println(F("Done!"));
+    Serial.println(("Done!"));
     
     //To make sure evrything is ok, verify the EEPROM data.
-    Serial.println(F("Verify EEPROM data"));
+    Serial.println(("Verify EEPROM data"));
     delay(1000);
     if(roll_axis != EEPROM.read(2))error = 1;
+    
     if(pitch_axis != EEPROM.read(3))error = 1;
+    
     if(yaw_axis != EEPROM.read(4))error = 1;
+    
     if(type != EEPROM.read(5))error = 1;
+    
     if(gyro_address != EEPROM.read(6))error = 1;
+    
     if('N' != EEPROM.read(7))error = 1;
     if('O' != EEPROM.read(8))error = 1;
     if('O' != EEPROM.read(9))error = 1;
     if('R' != EEPROM.read(10))error = 1;
   
-    if(error == 1)Serial.println(F("EEPROM verification failed!!! (ERROR )"));
-    else Serial.println(F("Verification done"));
+    if(error == 1)Serial.println(("EEPROM verification failed!!! (ERROR )"));
+    else Serial.println(("Verification done"));
     
   }
   
   
   if(error == 0){
-    Serial.println(F("Setup is finished."));
+    Serial.println(("Setup is finished."));
   }
- while(Serial.read()!='a'){yield();}  
 
-//==============================================================
-  webSocket.loop();
-//  ArduinoOTA.handle();
-  if(captive_portal)
-    dnsServer.processNextRequest();
-  server.handleClient();
-    // Serial.println("R %d RP %d T %d Y %d L1 %d L2 %d", (int)ppm[0], (int)ppm[1],  (int)ppm[2],  (int)ppm[3],  (int)ppm[4],  (int)ppm[5]);
-     Serial.print("Row "); Serial.print(ppm[0]); 
-     Serial.print("Pitch "); Serial.print(ppm[1]);
-     Serial.print("Throttle "); Serial.print(ppm[2]);
-     Serial.print("Yaw "); Serial.print(ppm[3]); 
-     Serial.print("L1 "); Serial.print(ppm[4]);
-     Serial.print("L2 "); Serial.print(ppm[5]);
-     Serial.println();
-     
-  if(alivecount>1000){
-    for(int i=0; i<4;i++){
-      ppm[i]=900;
-    }
-    for(int i=4; i<8;i++){
-      ppm[i]=1100;
-    }
-    
-  }
- 
-  yield();
-}
-
-
-byte search_gyro(int gyro_address, int who_am_i){
-  Wire.beginTransmission(gyro_address);
-  Wire.write(who_am_i);
-  Wire.endTransmission();
-  Wire.requestFrom(gyro_address, 1);
-  timer = millis() + 100;
-  while(Wire.available() < 1 && timer > millis());
-  lowByte = Wire.read();
-  address = gyro_address;
-  return lowByte;
-}
-
-void start_gyro(){
-  //Setup the L3G4200D or L3GD20H
-  //Setup the MPU-6050
-  if(type == 1){
-    
-    Wire.beginTransmission(address);                             //Start communication with the gyro
-    Wire.write(0x6B);                                            //PWR_MGMT_1 register
-    Wire.write(0x00);                                            //Set to zero to turn on the gyro
-    Wire.endTransmission();                                      //End the transmission
-    
-    Wire.beginTransmission(address);                             //Start communication with the gyro
-    Wire.write(0x6B);                                            //Start reading @ register 28h and auto increment with every read
-    Wire.endTransmission();                                      //End the transmission
-    Wire.requestFrom(address, 1);                                //Request 1 bytes from the gyro
-    while(Wire.available() < 1);                                 //Wait until the 1 byte is received
-    Serial.print(F("Register 0x6B is set to:"));
-    Serial.println(Wire.read(),BIN);
-    
-    Wire.beginTransmission(address);                             //Start communication with the gyro
-    Wire.write(0x1B);                                            //GYRO_CONFIG register
-    Wire.write(0x08);                                            //Set the register bits as 00001000 (500dps full scale)
-    Wire.endTransmission();                                      //End the transmission
-    
-    Wire.beginTransmission(address);                             //Start communication with the gyro (adress 1101001)
-    Wire.write(0x1B);                                            //Start reading @ register 28h and auto increment with every read
-    Wire.endTransmission();                                      //End the transmission
-    Wire.requestFrom(address, 1);                                //Request 1 bytes from the gyro
-    while(Wire.available() < 1);                                 //Wait until the 1 byte is received
-    Serial.print(F("Register 0x1B is set to:"));
-    Serial.println(Wire.read(),BIN);
-
-  }
-}
-
-void gyro_signalen(){
-  if(type == 1){
-    Wire.beginTransmission(address);                             //Start communication with the gyro
-    Wire.write(0x43);                                            //Start reading @ register 43h and auto increment with every read
-    Wire.endTransmission();                                      //End the transmission
-    Wire.requestFrom(address,6);                                 //Request 6 bytes from the gyro
-    while(Wire.available() < 6);                                 //Wait until the 6 bytes are received
-    gyro_roll=Wire.read()<<8|Wire.read();                        //Read high and low part of the angular data
-    if(cal_int == 2000)gyro_roll -= gyro_roll_cal;               //Only compensate after the calibration
-    gyro_pitch=Wire.read()<<8|Wire.read();                       //Read high and low part of the angular data
-    if(cal_int == 2000)gyro_pitch -= gyro_pitch_cal;             //Only compensate after the calibration
-    gyro_yaw=Wire.read()<<8|Wire.read();                         //Read high and low part of the angular data
-    if(cal_int == 2000)gyro_yaw -= gyro_yaw_cal;                 //Only compensate after the calibration
-  }
-}
-
-void check_gyro_axes(byte movement){
-  byte trigger_axis = 0;
-  float gyro_angle_roll, gyro_angle_pitch, gyro_angle_yaw;
-  //Reset all axes
-  gyro_angle_roll = 0;
-  gyro_angle_pitch = 0;
-  gyro_angle_yaw = 0;
-  gyro_signalen();
- // timer = millis() + 10000;    
-  while( gyro_angle_roll > -30 && gyro_angle_roll < 30 && gyro_angle_pitch > -30 && gyro_angle_pitch < 30 && gyro_angle_yaw > -30 && gyro_angle_yaw < 30){
-    gyro_signalen();
-    yield();
-    if(type == 2 || type == 3){
-      gyro_angle_roll += gyro_roll * 0.00007;              //0.00007 = 17.5 (md/s) / 250(Hz)
-      gyro_angle_pitch += gyro_pitch * 0.00007;
-      gyro_angle_yaw += gyro_yaw * 0.00007;
-    }
-    if(type == 1){
-      gyro_angle_roll += gyro_roll * 0.0000611;          // 0.0000611 = 1 / 65.5 (LSB degr/s) / 250(Hz)
-      gyro_angle_pitch += gyro_pitch * 0.0000611;
-      gyro_angle_yaw += gyro_yaw * 0.0000611;
-    }
-    
-    delayMicroseconds(3700); //Loop is running
-  }
-  //Assign the moved axis to the orresponding function (pitch, roll, yaw)
-  if((gyro_angle_roll < -30 || gyro_angle_roll > 30) && gyro_angle_pitch > -30 && gyro_angle_pitch < 30 && gyro_angle_yaw > -30 && gyro_angle_yaw < 30){
-    gyro_check_byte |= 0b00000001;
-    if(gyro_angle_roll < 0)trigger_axis = 0b10000001;
-    else trigger_axis = 0b00000001;
-  }
-  if((gyro_angle_pitch < -30 || gyro_angle_pitch > 30) && gyro_angle_roll > -30 && gyro_angle_roll < 30 && gyro_angle_yaw > -30 && gyro_angle_yaw < 30){
-    gyro_check_byte |= 0b00000010;
-    if(gyro_angle_pitch < 0)trigger_axis = 0b10000010;
-    else trigger_axis = 0b00000010;
-  }
-  if((gyro_angle_yaw < -30 || gyro_angle_yaw > 30) && gyro_angle_roll > -30 && gyro_angle_roll < 30 && gyro_angle_pitch > -30 && gyro_angle_pitch < 30){
-    gyro_check_byte |= 0b00000100;
-    if(gyro_angle_yaw < 0)trigger_axis = 0b10000011;
-    else trigger_axis = 0b00000011;
-  }
-  
-  if(trigger_axis == 0){
-    error = 1;
-    Serial.println(F("No angular motion is detected."));
-  }
-  else
-  if(movement == 1)roll_axis = trigger_axis;
-  if(movement == 2)pitch_axis = trigger_axis;
-  if(movement == 3)yaw_axis = trigger_axis;
-  
-}
-void EEPROM_Commit()
-{
- //Serial.printf("Commit %s\n", EEPROM.commit() ? "OK" : "KO");
-  EEPROM.end();
-  delay(100);
 }
