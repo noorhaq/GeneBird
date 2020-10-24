@@ -87,7 +87,7 @@ float low_battery_warn = 9.5; //Can be set for any value
 //====================
 //=========================================================
 uint8_t last_channel_1, last_channel_2, last_channel_3, last_channel_4;
-uint8_t check_byte, flip32, start;
+uint8_t check_byte, flip32, start = 2;
 uint8_t error, error_counter, error_led;
 uint8_t flight_mode, flight_mode_counter, flight_mode_led;
 uint8_t takeoff_detected, manual_altitude_change;
@@ -101,6 +101,7 @@ int16_t throttle, takeoff_throttle, cal_int;
 int16_t temperature, count_var;
 int16_t acc_x, acc_y, acc_z;
 int16_t gyro_pitch, gyro_roll, gyro_yaw;
+int16_t acc_axis[4], gyro_axis[4];
 
 int32_t channel_1_start, channel_1, pid_roll_setpoint_base;
 int32_t channel_2_start, channel_2, pid_pitch_setpoint_base;

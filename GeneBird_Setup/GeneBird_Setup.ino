@@ -21,13 +21,13 @@ volatile unsigned long next;
 volatile unsigned int ppm_running=1;
 
 boolean Gyro_Temp = false;
-byte angle_roll_acc_manual_offset , angle_pitch_acc_manual_offset, roll_axis;
+byte angle_roll_acc_manual_offset , angle_pitch_acc_manual_offset;
 //=================================================
 //********************Variables
 //=================================================
 int ppm[CHANNEL_NUMBER];
 byte lowByte, highByte, type, clockspeed_ok;
-byte  pitch_axis, yaw_axis;
+byte  roll_axis, pitch_axis, yaw_axis;
 byte receiver_check_byte, gyro_check_byte;
 int address;
 unsigned long timer, timer_1, timer_2, timer_3, timer_4, current_time;
@@ -253,7 +253,7 @@ void check_gyro_axes(byte movement){
 //===========================
 void setup() {
   Serial.begin(115200); //Serial Monitor Display
-  EEPROM.begin(512);
+ // EEPROM.begin(512);
   pinMode(Motor1,OUTPUT); //Initialing PWM output for Motor Control Pins 
   pinMode(Motor2,OUTPUT); //Initialing PWM output for Motor Control Pins
   pinMode(Motor3,OUTPUT); //Initialing PWM output for Motor Control Pins
@@ -380,6 +380,7 @@ void setup() {
   
 
 Check();
+EEPROM_Commit();
 }
 
 unsigned long time_now = 0;
@@ -390,19 +391,16 @@ unsigned long time_now = 0;
 //**************************************************************
 
 void loop() {
- //while(Serial.read()!='a'){ArduinoOTA.handle(); delay(100);}  
- EEPROM_Commit();
 
 //==============================================================
   webSocket.loop();
-
+ ArduinoOTA.handle();
     
-  ArduinoOTA.handle();
+
  
   if(captive_portal)
     dnsServer.processNextRequest();
   server.handleClient();
-     Serial.println();
      
   if(alivecount>1000){
     for(int i=0; i<4;i++){
@@ -414,7 +412,6 @@ void loop() {
     
   }
  
- delay(1000);
   yield();
 }
 //========================================
@@ -537,10 +534,10 @@ void Check(){
     angle_pitch_acc = asin((float)acc_y/acc_total_vector)* 57.296;       //Calculate the pitch angle
     angle_roll_acc = asin((float)acc_x/acc_total_vector)* -57.296;       //Calculate the roll angle
     
-  if(!temp){
+  if(!Gyro_Temp){
       angle_roll_acc_manual_offset = angle_pitch_acc;                                              //Accelerometer calibration value for pitch
       angle_pitch_acc_manual_offset = angle_roll_acc; 
-      temp = true;
+      Gyro_Temp = true;
        }
    angle_pitch_acc -= angle_roll_acc_manual_offset ;                                              //Accelerometer calibration value for pitch
    angle_roll_acc -= angle_pitch_acc_manual_offset;                                               //Accelerometer calibration value for roll
@@ -551,15 +548,17 @@ void Check(){
     Serial.println("If not re run the calibration of gyro and don't move.");
     Serial.println("Move the quadcopter/IMU around to check change in angles.");
     Serial.println("....."); 
-    Serial.println(("Press A to countinue and 100 Gyro values will be printed. "));
-      while(Serial.read()!='a'){yield();}
- for(int i =0; i< 100; i++){
+    Serial.println(("Press a to stop 100 Gyro values from printing. "));
+    delay(1000);
+      while(Serial.read()!='a'){
+  gyro_signalen();
    Serial.print("Pitch: ");
    Serial.print(angle_pitch ,0);
    Serial.print(" Roll: ");
    Serial.print(angle_roll ,0);
    Serial.print(" Yaw: ");
    Serial.println(gyro_yaw / 65.5 ,0);
+   yield();
  }
 
     Serial.println(".....");
@@ -652,71 +651,71 @@ void Check(){
 
 void EEPROM_Commit()
 {
- 
-   if(error == 0){
-    //If all is good, store the information in the EEPROM
-    Serial.println((""));
-    Serial.println(("==================================================="));
-    Serial.println(("Storing EEPROM information"));
-    Serial.println(("==================================================="));
-    Serial.println(("Writing EEPROM"));
-
-    EEPROM.write(0,angle_pitch_acc_manual_offset);
+// 
+//   if(error == 0){
+//    //If all is good, store the information in the EEPROM
+//    Serial.println((""));
+//    Serial.println(("==================================================="));
+//    Serial.println(("Storing EEPROM information"));
+//    Serial.println(("==================================================="));
+//    Serial.println(("Writing EEPROM"));
+//
+ //   EEPROM.write(0,angle_pitch_acc_manual_offset);
 Serial.printf("ANGLE PITCH ACC MANUAL OFFSET : %d \n",angle_pitch_acc_manual_offset);
   delay(100);
-    EEPROM.write(1,angle_roll_acc_manual_offset); 
+ //   EEPROM.write(1,angle_roll_acc_manual_offset); 
       delay(100);
 Serial.printf("angle_roll_acc_manual_offset : %d \n",angle_roll_acc_manual_offset);
-    EEPROM.write(2, roll_axis); 
+  //  EEPROM.write(2, roll_axis); 
       delay(100); 
 Serial.printf("roll_axis: %d \n",roll_axis);
-    EEPROM.write(3, pitch_axis);
+  //  EEPROM.write(3, pitch_axis);
           delay(100); 
 Serial.printf("pitch_axis : %d \n",pitch_axis);
-    EEPROM.write(4, yaw_axis);
+  //  EEPROM.write(4, yaw_axis);
           delay(100);  
 Serial.printf("yaw_axis : %d \n",yaw_axis);
       delay(100); 
-    EEPROM.write(5, type);  
+  //  EEPROM.write(5, type);  
           delay(100); 
 Serial.printf("type : %d \n", type);
-    EEPROM.write(6, gyro_address); 
+  //  EEPROM.write(6, gyro_address); 
           delay(100); 
 Serial.printf("gyro_address : %d \n",gyro_address);
-    //Write the EEPROM signature
-    EEPROM.write(7, 'N');  
+//    //Write the EEPROM signature
+  //  EEPROM.write(7, 'N');  
           delay(100); 
-    EEPROM.write(8, 'O');
+  //  EEPROM.write(8, 'O');
           delay(100);   
-    EEPROM.write(9, 'O');
+  //  EEPROM.write(9, 'O');
           delay(100);  
-    EEPROM.write(10, 'R');
+  //  EEPROM.write(10, 'R');
           delay(100); 
         delay(1000);
     Serial.println(("Done!"));
+ //   EEPROM.commit();
+//    //To make sure evrything is ok, verify the EEPROM data.
+//    Serial.println(("Verify EEPROM data"));
+//    delay(1000);
+//    if(roll_axis != EEPROM.read(2))error = 1;
+//    
+//    if(pitch_axis != EEPROM.read(3))error = 1;
+//    
+//    if(yaw_axis != EEPROM.read(4))error = 1;
+//    
+//    if(type != EEPROM.read(5))error = 1;
+//    
+//    if(gyro_address != EEPROM.read(6))error = 1;
+//    
+//    if('N' != EEPROM.read(7))error = 1;
+//    if('O' != EEPROM.read(8))error = 1;
+//    if('O' != EEPROM.read(9))error = 1;
+//    if('R' != EEPROM.read(10))error = 1;
+//  Serial.println(EEPROM.read(5));
+//    if(error == 1)Serial.println(("EEPROM verification failed!!! (ERROR )"));
+//    else Serial.println(("Verification done"));
     
-    //To make sure evrything is ok, verify the EEPROM data.
-    Serial.println(("Verify EEPROM data"));
-    delay(1000);
-    if(roll_axis != EEPROM.read(2))error = 1;
-    
-    if(pitch_axis != EEPROM.read(3))error = 1;
-    
-    if(yaw_axis != EEPROM.read(4))error = 1;
-    
-    if(type != EEPROM.read(5))error = 1;
-    
-    if(gyro_address != EEPROM.read(6))error = 1;
-    
-    if('N' != EEPROM.read(7))error = 1;
-    if('O' != EEPROM.read(8))error = 1;
-    if('O' != EEPROM.read(9))error = 1;
-    if('R' != EEPROM.read(10))error = 1;
-  
-    if(error == 1)Serial.println(("EEPROM verification failed!!! (ERROR )"));
-    else Serial.println(("Verification done"));
-    
-  }
+//  }
   
   
   if(error == 0){

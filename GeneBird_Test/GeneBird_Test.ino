@@ -15,13 +15,37 @@
 #include <EEPROM.h>
 #include "config.h"
 #include <Arduino.h>
+#include <ArduinoOTA.h>
 
 char Menu_Input;
 volatile unsigned long next;
 volatile unsigned int ppm_running=1;
-int8_t EEPROM_READ[11]; // To read EEPROM data
+//int8_t EEPROM_READ[11]; // To read EEPROM data
 
 int32_t angle_roll_acc_manual_offset , angle_pitch_acc_manual_offset;
+boolean first_angle = false;
+int16_t gyro_axis_cal[4];
+//==================================================
+//********************MPU6050
+//==================================================
+
+// sensitivity scale factor respective to full scale setting provided in datasheet 
+const uint16_t AccelScaleFactor = 16384;
+const uint16_t GyroScaleFactor = 131;
+
+// MPU6050 few configuration register addresses
+const uint8_t MPU6050_REGISTER_SMPLRT_DIV   =  0x19;
+const uint8_t MPU6050_REGISTER_USER_CTRL    =  0x6A;
+const uint8_t MPU6050_REGISTER_PWR_MGMT_1   =  0x6B;
+const uint8_t MPU6050_REGISTER_PWR_MGMT_2   =  0x6C;
+const uint8_t MPU6050_REGISTER_CONFIG       =  0x1A;
+const uint8_t MPU6050_REGISTER_GYRO_CONFIG  =  0x1B;
+const uint8_t MPU6050_REGISTER_ACCEL_CONFIG =  0x1C;
+const uint8_t MPU6050_REGISTER_FIFO_EN      =  0x23;
+const uint8_t MPU6050_REGISTER_INT_ENABLE   =  0x38;
+const uint8_t MPU6050_REGISTER_ACCEL_XOUT_H =  0x3B;
+const uint8_t MPU6050_REGISTER_SIGNAL_PATH_RESET  = 0x68;
+
 //=================================================
 //********************Variables
 //=================================================
@@ -31,6 +55,7 @@ byte roll_axis, pitch_axis, yaw_axis;
 byte receiver_check_byte, gyro_check_byte;
 int address;
 unsigned long timer, timer_1, timer_2, timer_3, timer_4, current_time;
+
 
 const byte captive_portal=0;
 const byte DNS_PORT = 53;
@@ -136,7 +161,7 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length
 
 void setup() {
   Serial.begin(115200); //Serial Monitor Display
-  
+   // EEPROM.begin(512);
   pinMode(Motor1,OUTPUT); //Initialing PWM output for Motor Control Pins 
   pinMode(Motor2,OUTPUT); //Initialing PWM output for Motor Control Pins
   pinMode(Motor3,OUTPUT); //Initialing PWM output for Motor Control Pins
@@ -152,7 +177,7 @@ void setup() {
   pinMode(LED, OUTPUT); //Initialing LED 
 
   Wire.begin(SDA,SCL);
- // Wire.setClock (I2C_Speed);          //I2C Initiliazination
+//  Wire.setClock (400000);          //I2C Initiliazination
   delay(250);
 
 
@@ -225,8 +250,91 @@ void setup() {
   }
   interrupts();
   msp.begin(Serial);
-  EEPROM.begin(512);
-  EEPROM_READ_DATA();
+ //=======================OTA===========
+  
+    ArduinoOTA.onStart([]() {
+    String type;
+    if (ArduinoOTA.getCommand() == U_FLASH) {
+      type = "sketch";
+    } else { // U_FS
+      type = "filesystem";
+    }
+
+    // NOTE: if updating FS this would be the place to unmount FS using FS.end()
+    Serial.println("Start updating " + type);
+  });
+  ArduinoOTA.onEnd([]() {
+    Serial.println("\nEnd");
+  });
+  ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
+    Serial.printf("Progress: %u%%\r", (progress / (total / 100)));
+  });
+  ArduinoOTA.onError([](ota_error_t error) {
+    Serial.printf("Error[%u]: ", error);
+    if (error == OTA_AUTH_ERROR) {
+      Serial.println("Auth Failed");
+    } else if (error == OTA_BEGIN_ERROR) {
+      Serial.println("Begin Failed");
+    } else if (error == OTA_CONNECT_ERROR) {
+      Serial.println("Connect Failed");
+    } else if (error == OTA_RECEIVE_ERROR) {
+      Serial.println("Receive Failed");
+    } else if (error == OTA_END_ERROR) {
+      Serial.println("End Failed");
+    }
+  });
+
+  ArduinoOTA.begin();
+
+    EEPROM_READ_DATA();
+ //=============================GYRO START
+   Serial.println(F("System check :-Gyro"));
+  Serial.println("Please Input q to exit.");
+  Serial.println(F("==================================================="));
+  delay(100);
+    Serial.println(("Searching for MPU-6050 on address 0x68/104"));
+    delay(100);
+    if(search_gyro(0x68, 0x75) == 0x68){
+      Serial.println(("MPU-6050 found on address 0x68"));
+      type = 1;
+      gyro_address = 0x68;
+    }
+    
+    if(type == 0){
+      Serial.println(("Searching for MPU-6050 on address 0x69"));
+      delay(100);
+      if(search_gyro(0x69, 0x75) == 0x68){
+        Serial.println(("MPU-6050 found on address 0x69"));
+        type = 1;
+        gyro_address = 0x69;
+      }
+    }
+     
+    if(type == 0){
+      Serial.println(("No gyro device found!!! (ERROR )"));
+      error = 1;
+    }
+    
+    else{
+      delay(30);
+      Serial.println((""));
+      Serial.println(("==================================================="));
+      Serial.println(("Gyro register settings"));
+      Serial.println(("==================================================="));
+//      start_gyro(); //Setup the gyro for further use
+    }
+  //===========================================================================
+  
+   start_gyro(); //Setup the gyro for further use
+     Menu();
+     while(Menu_Input !='q'){
+          if (Serial.available() > 0)
+              {
+              Menu_Input = Serial.read();                                       //Read the incomming byte.    
+              Check();//Wait for any other bytes to come in.
+              }
+      }
+      
 }
 
 unsigned long time_now = 0;
@@ -237,97 +345,118 @@ unsigned long time_now = 0;
 //**************************************************************
 
 void loop() {
-Serial.println("Welcome User");
-//==============================================================
   webSocket.loop();
-//  ArduinoOTA.handle();
+      ArduinoOTA.handle();
   if(captive_portal)
     dnsServer.processNextRequest();
   server.handleClient();
-    // Serial.println("R %d RP %d T %d Y %d L1 %d L2 %d", (int)ppm[0], (int)ppm[1],  (int)ppm[2],  (int)ppm[3],  (int)ppm[4],  (int)ppm[5]); 
-  if(alivecount>1000){
-    for(int i=0; i<4;i++){
-      ppm[i]=Min_throttle;
-    }
-    for(int i=4; i<8;i++){
-      ppm[i]=1000;
-    }
-  }
-    
-    Menu();
+
 
   yield();
 }
 
 
 void start_gyro(){
-  //Setup the L3G4200D or L3GD20H
   //Setup the MPU-6050
-  if(type == 1){
-    
-    Wire.beginTransmission(address);                             //Start communication with the gyro
-    Wire.write(0x6B);                                            //PWR_MGMT_1 register
-    Wire.write(0x00);                                            //Set to zero to turn on the gyro
-    Wire.endTransmission();                                      //End the transmission
-    
-    Wire.beginTransmission(address);                             //Start communication with the gyro
-    Wire.write(0x6B);                                            //Start reading @ register 28h and auto increment with every read
-    Wire.endTransmission();                                      //End the transmission
-    Wire.requestFrom(address, 1);                                //Request 1 bytes from the gyro
-    while(Wire.available() < 1);                                 //Wait until the 1 byte is received
-    Serial.print(F("Register 0x6B is set to:"));
-    Serial.println(Wire.read(),BIN);
-    
-    Wire.beginTransmission(address);                             //Start communication with the gyro
-    Wire.write(0x1B);                                            //GYRO_CONFIG register
-    Wire.write(0x08);                                            //Set the register bits as 00001000 (500dps full scale)
-    Wire.endTransmission();                                      //End the transmission
-    
-    Wire.beginTransmission(address);                             //Start communication with the gyro (adress 1101001)
-    Wire.write(0x1B);                                            //Start reading @ register 28h and auto increment with every read
-    Wire.endTransmission();                                      //End the transmission
-    Wire.requestFrom(address, 1);                                //Request 1 bytes from the gyro
-    while(Wire.available() < 1);                                 //Wait until the 1 byte is received
-    Serial.print(F("Register 0x1B is set to:"));
-    Serial.println(Wire.read(),BIN);
-
-  }
+  delay(150);
+  I2C_Write(gyro_address, MPU6050_REGISTER_SMPLRT_DIV, 0x07);
+  I2C_Write(gyro_address, MPU6050_REGISTER_PWR_MGMT_1, 0x01);
+  I2C_Write(gyro_address, MPU6050_REGISTER_PWR_MGMT_2, 0x00);
+  I2C_Write(gyro_address, MPU6050_REGISTER_CONFIG, 0x00);
+  I2C_Write(gyro_address, MPU6050_REGISTER_GYRO_CONFIG, 0x00);//set +/-250 degree/second full scale
+  I2C_Write(gyro_address, MPU6050_REGISTER_ACCEL_CONFIG, 0x00);// set +/- 2g full scale
+  I2C_Write(gyro_address, MPU6050_REGISTER_FIFO_EN, 0x00);
+  I2C_Write(gyro_address, MPU6050_REGISTER_INT_ENABLE, 0x01);
+  I2C_Write(gyro_address, MPU6050_REGISTER_SIGNAL_PATH_RESET, 0x00);
+  I2C_Write(gyro_address, MPU6050_REGISTER_USER_CTRL, 0x00);  delay(300);
+  Serial.printf("MPU6050 started at Adddress %d: ", gyro_address);
 }
 
 void gyro_signalen(){
-  if(type == 1){
-    Wire.beginTransmission(address);                             //Start communication with the gyro
-    Wire.write(0x43);                                            //Start reading @ register 43h and auto increment with every read
-    Wire.endTransmission();                                      //End the transmission
-    Wire.requestFrom(address,6);                                 //Request 6 bytes from the gyro
-    while(Wire.available() < 6);                                 //Wait until the 6 bytes are received
-    gyro_roll=Wire.read()<<8|Wire.read();                        //Read high and low part of the angular data
-    if(cal_int == 2000)gyro_roll -= gyro_roll_cal;               //Only compensate after the calibration
-    gyro_pitch=Wire.read()<<8|Wire.read();                       //Read high and low part of the angular data
-    if(cal_int == 2000)gyro_pitch -= gyro_pitch_cal;             //Only compensate after the calibration
-    gyro_yaw=Wire.read()<<8|Wire.read();                         //Read high and low part of the angular data
-    if(cal_int == 2000)gyro_yaw -= gyro_yaw_cal;                 //Only compensate after the calibration
+  //Read the MPU-6050
+  Wire.beginTransmission(gyro_address);
+  Wire.write(MPU6050_REGISTER_ACCEL_XOUT_H);
+  Wire.endTransmission();
+  Wire.requestFrom(gyro_address, (uint8_t)14);
+  acc_axis[1] = (((int16_t)Wire.read()<<8) | Wire.read());
+  acc_axis[2] = (((int16_t)Wire.read()<<8) | Wire.read());
+  acc_axis[3]  = (((int16_t)Wire.read()<<8) | Wire.read());
+  temperature = (((int16_t)Wire.read()<<8) | Wire.read());
+  gyro_axis[1] = (((int16_t)Wire.read()<<8) | Wire.read());
+  gyro_axis[2] = (((int16_t)Wire.read()<<8) | Wire.read());
+  gyro_axis[3] = (((int16_t)Wire.read()<<8) | Wire.read());
+  
+  if(cal_int == Gyro_Calib_offset){
+    gyro_axis[1] -= gyro_axis_cal[1];                            //Only compensate after the calibration.
+    gyro_axis[2] -= gyro_axis_cal[2];                            //Only compensate after the calibration.
+    gyro_axis[3] -= gyro_axis_cal[3];                            //Only compensate after the calibration.
   }
+  double Ax, Ay, Az, T, Gx, Gy, Gz;
+  
+  
+  //divide each with their sensitivity scale factor
+  acc_axis[1] = (double)acc_axis[1];
+  acc_axis[2] = (double)acc_axis[2];
+  acc_axis[3] = (double)acc_axis[3];
+  T = (double)temperature/340+36.53; //temperature formula
+  gyro_axis[1] = (double)gyro_axis[1];
+  gyro_axis[2] = (double)gyro_axis[2];
+  gyro_axis[3] = (double)gyro_axis[3];
+
+// Serial.print("Ax: "); Serial.print(Ax);
+//  Serial.print(" Ay: "); Serial.print(Ay);
+//  Serial.print(" Az: "); Serial.print(Az);
+//  Serial.print(" T: "); Serial.print(T);
+//  Serial.print(" Gx: "); Serial.print(Gx);
+//  Serial.print(" Gy: "); Serial.print(Gy);
+//  Serial.print(" Gz: "); Serial.println(Gz);
+
+      acc_x = acc_axis[1];
+      acc_y = acc_axis[2];
+      acc_z = acc_axis[3];
+  gyro_roll = gyro_axis[1];
+ gyro_pitch = gyro_axis[2];
+   gyro_yaw = gyro_axis[3];
+//  gyro_roll = gyro_axis[roll_axis & 0b00000011];                      
+//  if(roll_axis & 0b10000000)gyro_roll *= -1;                          
+//  gyro_pitch = gyro_axis[pitch_axis & 0b00000011];                     //Set gyro_pitch to the correct axis that was stored in the EEPROM.
+//  if(pitch_axis & 0b10000000)gyro_pitch *= -1;                       
+//  gyro_yaw = gyro_axis[yaw_axis & 0b00000011];                       
+//  if(yaw_axis & 0b10000000)gyro_yaw *= -1;                           
+//
+//  acc_x = acc_axis[pitch_axis & 0b00000011];                           //Set acc_x to the correct axis that was stored in the EEPROM.
+//  if(pitch_axis & 0b10000000)acc_x *= -1;                              //Invert acc_x if the MSB of EEPROM bit 29 is set.
+//  acc_y = acc_axis[roll_axis & 0b00000011];                           //Set acc_y to the correct axis that was stored in the EEPROM.
+//  if(roll_axis  & 0b10000000)acc_y *= -1;                              //Invert acc_y if the MSB of EEPROM bit 28 is set.
+//  acc_z = acc_axis[yaw_axis & 0b00000011];                           //Set acc_z to the correct axis that was stored in the EEPROM.
+//  if(yaw_axis   & 0b10000000)acc_z *= -1;                              //Invert acc_z if the MSB of EEPROM bit 30 is set.
 }
 
 void EEPROM_READ_DATA(){
     for(int i = 0; i< 11; i++)
     {
-        EEPROM_READ[i] = EEPROM.read(i);
+     //   EEPROM_READ[i] = EEPROM.read(i);
         yield();
     }
-    angle_pitch_acc_manual_offset = EEPROM_READ[0];
-    angle_roll_acc_manual_offset = EEPROM_READ[1];
-    roll_axis = EEPROM_READ[2];
-    pitch_axis = EEPROM_READ[3];
-    yaw_axis = EEPROM_READ[4];
-    type = EEPROM_READ[5];
-    gyro_address = EEPROM_READ[6];
-    if((EEPROM_READ[7] != 'N') || (EEPROM_READ[8] != 'O') || (EEPROM_READ[9] != 'O') || (EEPROM_READ[10] != 'R'))
-    {
-        Serial.println("Please Run Setup Program first.");
-        while(1){yield();}
-    }
+    angle_pitch_acc_manual_offset = 0; //EEPROM_READ[0];
+    delay(10);
+    angle_roll_acc_manual_offset = 0; //EEPROM_READ[1]; 
+    delay(10);
+    roll_axis = 1; // EEPROM_READ[2];
+    delay(10);
+    pitch_axis = 2; //EEPROM_READ[3];
+    delay(10);
+    yaw_axis = 3; //EEPROM_READ[4];
+    delay(10);
+ //   type = 1;// EEPROM_READ[5];
+    delay(10);
+ //   gyro_address = 104; //EEPROM_READ[6];
+    delay(10);
+//    if((EEPROM_READ[7] != 'N') || (EEPROM_READ[8] != 'O') || (EEPROM_READ[9] != 'O') || (EEPROM_READ[10] != 'R'))
+//    {
+//        Serial.println("Please Run Setup Program first.");
+//        while(1){yield();}
+//    }
 }
 
 void Menu(){
@@ -340,12 +469,6 @@ void Menu(){
     Serial.println("TO check --Motor 4--         Please input '4' in serial monitor. ");
     Serial.println("TO       ---quit----         Please input 'q' in serial monitor. ");
     Serial.println("......... ");
-    if(Serial.available() >0 ){
-      
-        Menu_Input = Serial.read();
-        yield();
-    }
-    Check();
 }
 
 void Check(){
@@ -371,84 +494,151 @@ void Check(){
         break;
     case 'q':
         Serial.println("Flash the Flight controlller firmware and enjoy");
-        while(1){yield();}
         break;
 
     default:
-        Menu();
+      //  Menu();
         break;
     }
 }
 
 void Signals_Check(){
-      Serial.println(F("System check :-Channels"));
+      Serial.println(("System check :-Channels"));
       Serial.println("Please Input q to exit.");
-      Serial.println(F("==================================================="));
-   while(Serial.read()!='q' || Serial.read()!='Q'){
-    if(Serial.available() >0 ){
-        Menu_Input = Serial.read();
-        delay(30);
-        }
-        Serial.print('Roll : ');       Serial.print(ppm[0]);
-        Serial.print('\t Pitch : ');   Serial.print(ppm[1] );
-        Serial.print('\t Throttle');   Serial.print(ppm[2] );
-        Serial.print('\t Yaw');        Serial.print(ppm[3]);
-        Serial.print('\t Channel 5');  Serial.print(ppm[4]);
-        Serial.print('\t Channel 6');  Serial.print(ppm[5]);
-        Serial.print('\t Channel 7');  Serial.print(ppm[6]);
-        Serial.print('\t Channel 8');  Serial.println(ppm[7]);
+      Serial.println(("==================================================="));
+   while(Serial.read() !='q'){
+              webSocket.loop();
+          
+          if(captive_portal)
+            dnsServer.processNextRequest();
+          server.handleClient();
+          if(alivecount>1000){
+            for(int i=0; i<4;i++){
+              ppm[i]=Min_throttle;
+            }
+            for(int i=4; i<8;i++){
+              ppm[i]=1000;
+            }
+          }
+        Serial.print("Roll : ");       Serial.print(ppm[0]);
+        Serial.print("\t Pitch : ");   Serial.print(ppm[1] );
+        Serial.print("\t Throttle : ");   Serial.print(ppm[2] );
+        Serial.print("\t Yaw");        Serial.print(ppm[3]);
+        Serial.print("\t Chan 5 : ");  Serial.print(ppm[4]);
+        Serial.print("\t Chan 6 : ");  Serial.print(ppm[5]);
+        Serial.print("\t Chan 7 : ");  Serial.print(ppm[6]);
+        Serial.print("\t Chan 8 : ");  Serial.println(ppm[7]);
     yield();
     }
+    Menu();
 }
 
 void Gyro_Check(){
-    
-  Serial.println(F("System check :-Gyro"));
-  Serial.println("Please Input q to exit.");
-  Serial.println(F("==================================================="));
-  delay(100);
- while(Serial.read()!='q' || Serial.read()!='Q'){
-    
-    gyro_signalen();
-     angle_pitch += gyro_pitch * 0.0000611;                                          //Total Angle travelled by Gyro 
-      angle_roll += gyro_roll * 0.0000611;                                         //Total Angle travelled by Gyro
-    acc_total_vector = sqrt((acc_x*acc_x)+(acc_y*acc_y)+(acc_z*acc_z));  //Calculate the total accelerometer vector
-  //The Arduino asin function is in radians, so converting to degrees.
-    angle_pitch_acc = asin((float)acc_y/acc_total_vector)* 57.296;       //Calculate the pitch angle
-    angle_roll_acc = asin((float)acc_x/acc_total_vector)* -57.296;       //Calculate the roll angle
-    
-    angle_pitch_acc -= angle_roll_acc_manual_offset ;                                              //Accelerometer calibration value for pitch
-    angle_roll_acc -= angle_pitch_acc_manual_offset;                                               //Accelerometer calibration value for roll
-  //Using Filter to Dampen the Angle
-  //angle_pitch_output = angle_pitch_output * 0.75 + angle_pitch * 0.25;   //Take 90% of the output pitch value and add 10% of the raw pitch value
-  //angle_roll_output = angle_roll_output * 0.9 + angle_roll * 0.1;      //Take 90% of the output roll value and add 10% of the raw roll value
-    Serial.print("Pitch: ");  Serial.print(angle_pitch ,0);
-    Serial.print(" Roll: ");  Serial.print(angle_roll ,0);
-    Serial.print(" Yaw: ");   Serial.println(gyro_yaw / 65.5 ,0);
-      yield();
+ while(Serial.read()!='q'){
+        if(cal_int != Gyro_Calib_offset){
+      Serial.print("Calibrating the gyro");
+      //Let's take multiple gyro data samples so we can determine the average gyro offset (calibration).
+      for (cal_int = 0; cal_int < Gyro_Calib_offset ; cal_int ++){                                   //Take 2000 readings for calibration.
+        if(cal_int % 100 == 0)Serial.print(".");
+        gyro_signalen();                                                                //Read the gyro output.
+        gyro_axis_cal[1] += gyro_axis[1];                                               //Ad roll value to gyro_roll_cal.
+        gyro_axis_cal[2] += gyro_axis[2];                                               //Ad pitch value to gyro_pitch_cal.
+        gyro_axis_cal[3] += gyro_axis[3];                                               //Ad yaw value to gyro_yaw_cal.
+        delay(3);                                                                   
+      }
+      Serial.println(".");
+      //Now that we have Gyro_Calib_offset measures, we need to divide by Gyro_Calib_offset to get the average gyro offset.
+      gyro_axis_cal[1] /= Gyro_Calib_offset;                                                         //Divide the roll total by Gyro_Calib_offset.
+      gyro_axis_cal[2] /= Gyro_Calib_offset;                                                         //Divide the pitch total by Gyro_Calib_offset.
+      gyro_axis_cal[3] /= Gyro_Calib_offset;                                                         //Divide the yaw total by Gyro_Calib_offset.
     }
+    else{
+          gyro_signalen();
+  gyro_roll_input = (gyro_roll_input * 0.7) + (((float)gyro_roll / 65.5) * 0.3);   //Gyro pid input is deg/sec.
+  gyro_pitch_input = (gyro_pitch_input * 0.7) + (((float)gyro_pitch / 65.5) * 0.3);//Gyro pid input is deg/sec.
+  gyro_yaw_input = (gyro_yaw_input * 0.7) + (((float)gyro_yaw / 65.5) * 0.3);      //Gyro pid input is deg/sec.
 
+      //Gyro angle calculations
+      angle_pitch += (float)gyro_pitch * 0.0000611;                                           //Calculate the traveled pitch angle and add this to the angle_pitch variable.
+      angle_roll += (float)gyro_roll * 0.0000611;                                             //Calculate the traveled roll angle and add this to the angle_roll variable.
+      angle_yaw += (float)gyro_yaw * 0.0000611;
+      //0.000001066 = 0.0000611 * (3.142(PI) / 180degr) The Arduino sin function is in radians
+      angle_pitch -= angle_roll * sin(gyro_yaw * 0.000001066);                         //If the IMU has yawed transfer the roll angle to the pitch angel.
+      angle_roll += angle_pitch * sin(gyro_yaw * 0.000001066);                         //If the IMU has yawed transfer the pitch angle to the roll angel.
+
+    //Accelerometer angle calculations
+      acc_total_vector = sqrt((acc_x*acc_x)+(acc_y*acc_y)+(acc_z*acc_z));           //Calculate the total accelerometer vector.
+  if (abs(acc_y) < acc_total_vector) {                                             //Prevent the asin function to produce a NaN.
+    angle_pitch_acc = asin((float)acc_y / acc_total_vector) * 57.296;              //Calculate the pitch angle.
+  }
+  if (abs(acc_x) < acc_total_vector) {                                             //Prevent the asin function to produce a NaN.
+    angle_roll_acc = asin((float)acc_x / acc_total_vector) * 57.296;               //Calculate the roll angle.
+  }     
+      if(!first_angle){
+        angle_pitch = angle_pitch_acc;                                                 //Set the pitch angle to the accelerometer angle.
+        angle_roll = angle_roll_acc;                                                   //Set the roll angle to the accelerometer angle.
+        first_angle = true;
+      }
+      else{
+        angle_pitch = angle_pitch * 0.9996 + angle_pitch_acc * 0.0004;                 //Correct the drift of the gyro pitch angle with the accelerometer pitch angle.
+        angle_roll = angle_roll * 0.9996 + angle_roll_acc * 0.0004;                    //Correct the drift of the gyro roll angle with the accelerometer roll angle.
+      }
+
+      //We can't print all the data at once. This takes to long and the angular readings will be off.
+      Serial.print("Pitch: ");
+      Serial.print(angle_pitch ,0);
+      Serial.print(" Roll: ");
+      Serial.print(angle_roll ,0);
+      Serial.print(" Yaw: ");
+      Serial.println(gyro_yaw / 65.5 ,0);
+    delay(100);
+    }
+   }
+Menu();
 }
+
+byte search_gyro(int gyro_address, int who_am_i){
+  Wire.beginTransmission(gyro_address);
+  Wire.write(who_am_i);
+  Wire.endTransmission();
+  Wire.requestFrom(gyro_address, 1);
+  timer = millis() + 100;
+  while(Wire.available() < 1 && timer > millis());
+  lowByte = Wire.read();
+  address = gyro_address;
+  return lowByte;
+}
+
 
 void Motor_Check(uint8_t motor){
      Serial.println(F("System check :-Motor_Check"));
      Serial.println("Please Input q to exit.");
     Serial.println(F("==================================================="));
-    while(Serial.read()!='q' || Serial.read()!='Q'){
-     manual_throttle = map(manual_throttle,Max_throttle,Min_throttle,0,255);
+    while(Serial.read()!='q'){
+      yield();
+        webSocket.loop();  
+          if(captive_portal)
+            dnsServer.processNextRequest();
+          server.handleClient();
+      manual_throttle= ppm[2];
+     manual_throttle = map(manual_throttle,Min_throttle,Max_throttle,0,255);
      switch (motor)
      {
      case 1:
     analogWrite(Motor1,manual_throttle);
+    Serial.printf("Throttle : %d \n",manual_throttle );
          break;
     case 2:
     analogWrite(Motor2,manual_throttle);
+    Serial.printf("Throttle : %d \n",manual_throttle );
          break;
      case 3:
     analogWrite(Motor3,manual_throttle);
+    Serial.printf("Throttle : %d \n",manual_throttle );
          break;
      case 4:
     analogWrite(Motor4,manual_throttle);
+    Serial.printf("Throttle : %d \n",manual_throttle );
          break;
      default:
          break;
@@ -459,5 +649,12 @@ void Motor_Check(uint8_t motor){
     analogWrite(Motor2,0);
     analogWrite(Motor3,0);
     analogWrite(Motor4,0);
+    Menu();
+}
 
+void I2C_Write(uint8_t deviceAddress, uint8_t regAddress, uint8_t data){
+  Wire.beginTransmission(deviceAddress);
+  Wire.write(regAddress);
+  Wire.write(data);
+  Wire.endTransmission();
 }

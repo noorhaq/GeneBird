@@ -215,6 +215,3 @@ bool MSP::getActiveModes(uint32_t * activeModes)
 
   return false;
 }
-
-
-

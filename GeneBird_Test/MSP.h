@@ -672,4 +672,3 @@ class MSP {
     uint32_t _timeout;
     
 };
-
