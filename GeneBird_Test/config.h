@@ -91,7 +91,6 @@ uint8_t check_byte, flip32, start;
 uint8_t error, error_counter, error_led;
 uint8_t flight_mode, flight_mode_counter, flight_mode_led;
 uint8_t takeoff_detected, manual_altitude_change;
-uint8_t telemetry_send_byte, telemetry_bit_counter, telemetry_loop_counter;
 uint8_t channel_select_counter;
 uint8_t level_calibration_on;
 

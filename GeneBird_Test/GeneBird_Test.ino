@@ -12,7 +12,7 @@
 #include <Wire.h>
 #include <Hash.h>
 #include "MSP.h"
-#include <EEPROM.h>
+#include <EEPROM_Rotate.h>
 #include "config.h"
 #include <Arduino.h>
 #include <ArduinoOTA.h>
@@ -20,15 +20,15 @@
 char Menu_Input;
 volatile unsigned long next;
 volatile unsigned int ppm_running=1;
-//int8_t EEPROM_READ[11]; // To read EEPROM data
 
 int32_t angle_roll_acc_manual_offset , angle_pitch_acc_manual_offset;
 boolean first_angle = false;
 int16_t gyro_axis_cal[4];
+
 //==================================================
 //********************MPU6050
 //==================================================
-
+int loop_counter = 0;
 // sensitivity scale factor respective to full scale setting provided in datasheet 
 const uint16_t AccelScaleFactor = 16384;
 const uint16_t GyroScaleFactor = 131;
@@ -66,13 +66,13 @@ extern const char index_html[];
 unsigned int alivecount=0;
 
 MSP msp;
+EEPROM_Rotate EEPROMr;
 
 IPAddress apIP(192, 168, 1, 1);
 DNSServer dnsServer;
 //ESP8266WebServer server = ESP8266WebServer(80);
 ESP8266WebServer server (80);
 WebSocketsServer webSocket = WebSocketsServer(81);
-
 void inline ppmISR(void){
   static boolean state = true;
 
@@ -161,7 +161,6 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length
 
 void setup() {
   Serial.begin(115200); //Serial Monitor Display
-   // EEPROM.begin(512);
   pinMode(Motor1,OUTPUT); //Initialing PWM output for Motor Control Pins 
   pinMode(Motor2,OUTPUT); //Initialing PWM output for Motor Control Pins
   pinMode(Motor3,OUTPUT); //Initialing PWM output for Motor Control Pins
@@ -359,16 +358,26 @@ void loop() {
 void start_gyro(){
   //Setup the MPU-6050
   delay(150);
-  I2C_Write(gyro_address, MPU6050_REGISTER_SMPLRT_DIV, 0x07);
-  I2C_Write(gyro_address, MPU6050_REGISTER_PWR_MGMT_1, 0x01);
-  I2C_Write(gyro_address, MPU6050_REGISTER_PWR_MGMT_2, 0x00);
-  I2C_Write(gyro_address, MPU6050_REGISTER_CONFIG, 0x00);
-  I2C_Write(gyro_address, MPU6050_REGISTER_GYRO_CONFIG, 0x00);//set +/-250 degree/second full scale
-  I2C_Write(gyro_address, MPU6050_REGISTER_ACCEL_CONFIG, 0x00);// set +/- 2g full scale
-  I2C_Write(gyro_address, MPU6050_REGISTER_FIFO_EN, 0x00);
-  I2C_Write(gyro_address, MPU6050_REGISTER_INT_ENABLE, 0x01);
-  I2C_Write(gyro_address, MPU6050_REGISTER_SIGNAL_PATH_RESET, 0x00);
-  I2C_Write(gyro_address, MPU6050_REGISTER_USER_CTRL, 0x00);  delay(300);
+ // I2C_Write(gyro_address, MPU6050_REGISTER_SMPLRT_DIV, 0x07);
+  I2C_Write(gyro_address, 0x6B, 0x00);
+// I2C_Write(gyro_address, MPU6050_REGISTER_PWR_MGMT_2, 0x00);
+// I2C_Write(gyro_address, MPU6050_REGISTER_CONFIG, 0x00);
+  I2C_Write(gyro_address, 0x1B, 0x08);//set +/-500 degree/second full scale
+  I2C_Write(gyro_address, 0x1C, 0x10);// set +/- 8g full scale
+    Wire.beginTransmission(gyro_address);                        //Start communication with the address found during search
+    Wire.write(0x1B);                                            //Start reading @ register 0x1B
+    Wire.endTransmission();                                      //End the transmission
+    Wire.requestFrom(gyro_address, 1);                           //Request 1 bytes from the gyro
+    while(Wire.available() < 1);                                 //Wait until the 6 bytes are received
+    if(Wire.read() != 0x08){                                     //Check if the value is 0x08
+      digitalWrite(12,HIGH);                                     //Turn on the warning led
+      while(1)delay(10);                                         //Stay in this loop for ever
+    }
+//  I2C_Write(gyro_address, MPU6050_REGISTER_FIFO_EN, 0x00);
+//  I2C_Write(gyro_address, MPU6050_REGISTER_INT_ENABLE, 0x01);
+  I2C_Write(gyro_address, MPU6050_REGISTER_CONFIG, 0x03); //Set the register bits as 00000011 (Set Digital Low Pass Filter to ~43Hz)
+//  I2C_Write(gyro_address, MPU6050_REGISTER_SIGNAL_PATH_RESET, 0x00);
+//  I2C_Write(gyro_address, MPU6050_REGISTER_USER_CTRL, 0x00);  delay(300);
   Serial.printf("MPU6050 started at Adddress %d: ", gyro_address);
 }
 
@@ -378,13 +387,13 @@ void gyro_signalen(){
   Wire.write(MPU6050_REGISTER_ACCEL_XOUT_H);
   Wire.endTransmission();
   Wire.requestFrom(gyro_address, (uint8_t)14);
-  acc_axis[1] = (((int16_t)Wire.read()<<8) | Wire.read());
-  acc_axis[2] = (((int16_t)Wire.read()<<8) | Wire.read());
-  acc_axis[3]  = (((int16_t)Wire.read()<<8) | Wire.read());
-  temperature = (((int16_t)Wire.read()<<8) | Wire.read());
-  gyro_axis[1] = (((int16_t)Wire.read()<<8) | Wire.read());
-  gyro_axis[2] = (((int16_t)Wire.read()<<8) | Wire.read());
-  gyro_axis[3] = (((int16_t)Wire.read()<<8) | Wire.read());
+  acc_axis[1] = ((Wire.read()<<8) | Wire.read());
+  acc_axis[2] = ((Wire.read()<<8) | Wire.read());
+  acc_axis[3]  = ((Wire.read()<<8) | Wire.read());
+  temperature = ((Wire.read()<<8) | Wire.read());
+  gyro_axis[1] = ((Wire.read()<<8) | Wire.read());
+  gyro_axis[2] = ((Wire.read()<<8) | Wire.read());
+  gyro_axis[3] = ((Wire.read()<<8) | Wire.read());
   
   if(cal_int == Gyro_Calib_offset){
     gyro_axis[1] -= gyro_axis_cal[1];                            //Only compensate after the calibration.
@@ -395,13 +404,13 @@ void gyro_signalen(){
   
   
   //divide each with their sensitivity scale factor
-  acc_axis[1] = (double)acc_axis[1];
-  acc_axis[2] = (double)acc_axis[2];
-  acc_axis[3] = (double)acc_axis[3];
-  T = (double)temperature/340+36.53; //temperature formula
-  gyro_axis[1] = (double)gyro_axis[1];
-  gyro_axis[2] = (double)gyro_axis[2];
-  gyro_axis[3] = (double)gyro_axis[3];
+  acc_axis[1] = acc_axis[1];
+  acc_axis[2] = acc_axis[2];
+  acc_axis[3] = acc_axis[3];
+  T = temperature/340+36.53; //temperature formula
+  gyro_axis[1] = gyro_axis[1];
+  gyro_axis[2] = gyro_axis[2];
+  gyro_axis[3] = gyro_axis[3];
 
 // Serial.print("Ax: "); Serial.print(Ax);
 //  Serial.print(" Ay: "); Serial.print(Ay);
@@ -411,52 +420,53 @@ void gyro_signalen(){
 //  Serial.print(" Gy: "); Serial.print(Gy);
 //  Serial.print(" Gz: "); Serial.println(Gz);
 
-      acc_x = acc_axis[1];
-      acc_y = acc_axis[2];
-      acc_z = acc_axis[3];
-  gyro_roll = gyro_axis[1];
- gyro_pitch = gyro_axis[2];
-   gyro_yaw = gyro_axis[3];
-//  gyro_roll = gyro_axis[roll_axis & 0b00000011];                      
-//  if(roll_axis & 0b10000000)gyro_roll *= -1;                          
-//  gyro_pitch = gyro_axis[pitch_axis & 0b00000011];                     //Set gyro_pitch to the correct axis that was stored in the EEPROM.
-//  if(pitch_axis & 0b10000000)gyro_pitch *= -1;                       
-//  gyro_yaw = gyro_axis[yaw_axis & 0b00000011];                       
-//  if(yaw_axis & 0b10000000)gyro_yaw *= -1;                           
-//
-//  acc_x = acc_axis[pitch_axis & 0b00000011];                           //Set acc_x to the correct axis that was stored in the EEPROM.
-//  if(pitch_axis & 0b10000000)acc_x *= -1;                              //Invert acc_x if the MSB of EEPROM bit 29 is set.
-//  acc_y = acc_axis[roll_axis & 0b00000011];                           //Set acc_y to the correct axis that was stored in the EEPROM.
-//  if(roll_axis  & 0b10000000)acc_y *= -1;                              //Invert acc_y if the MSB of EEPROM bit 28 is set.
-//  acc_z = acc_axis[yaw_axis & 0b00000011];                           //Set acc_z to the correct axis that was stored in the EEPROM.
-//  if(yaw_axis   & 0b10000000)acc_z *= -1;                              //Invert acc_z if the MSB of EEPROM bit 30 is set.
+//      acc_x = acc_axis[1];
+//      acc_y = acc_axis[2];
+//      acc_z = acc_axis[3];
+//  gyro_roll = gyro_axis[1];
+// gyro_pitch = gyro_axis[2];
+//   gyro_yaw = gyro_axis[3];
+  gyro_roll = gyro_axis[roll_axis & 0b00000011];                      
+  if(roll_axis & 0b10000000)gyro_roll *= -1;                          
+  gyro_pitch = gyro_axis[pitch_axis & 0b00000011];                     //Set gyro_pitch to the correct axis that was stored in the EEPROM.
+  if(pitch_axis & 0b10000000)gyro_pitch *= -1;                       
+  gyro_yaw = gyro_axis[yaw_axis & 0b00000011];                       
+  if(yaw_axis & 0b10000000)gyro_yaw *= -1;                           
+
+  acc_x = acc_axis[pitch_axis & 0b00000011];                           //Set acc_x to the correct axis that was stored in the EEPROM.
+  if(pitch_axis & 0b10000000)acc_x *= -1;                              //Invert acc_x if the MSB of EEPROM bit 29 is set.
+  acc_y = acc_axis[roll_axis & 0b00000011];                           //Set acc_y to the correct axis that was stored in the EEPROM.
+  if(roll_axis  & 0b10000000)acc_y *= -1;                              //Invert acc_y if the MSB of EEPROM bit 28 is set.
+  acc_z = acc_axis[yaw_axis & 0b00000011];                           //Set acc_z to the correct axis that was stored in the EEPROM.
+  if(yaw_axis   & 0b10000000)acc_z *= -1;                              //Invert acc_z if the MSB of EEPROM bit 30 is set.
 }
 
 void EEPROM_READ_DATA(){
-    for(int i = 0; i< 11; i++)
-    {
-     //   EEPROM_READ[i] = EEPROM.read(i);
-        yield();
+      EEPROMr.size(14);
+    EEPROMr.begin(256);
+
+    Serial.printf("[EEPROM] Sector pool size : %u\n", EEPROMr.size());
+    Serial.printf("[EEPROM] Sectors in use   : ");
+    for (uint32_t i = 0; i < EEPROMr.size(); i++) {
+        if (i>0) Serial.print(", ");
+        Serial.print(EEPROMr.base() - i);
     }
-    angle_pitch_acc_manual_offset = 0; //EEPROM_READ[0];
-    delay(10);
-    angle_roll_acc_manual_offset = 0; //EEPROM_READ[1]; 
-    delay(10);
-    roll_axis = 1; // EEPROM_READ[2];
-    delay(10);
-    pitch_axis = 2; //EEPROM_READ[3];
-    delay(10);
-    yaw_axis = 3; //EEPROM_READ[4];
-    delay(10);
- //   type = 1;// EEPROM_READ[5];
-    delay(10);
- //   gyro_address = 104; //EEPROM_READ[6];
-    delay(10);
-//    if((EEPROM_READ[7] != 'N') || (EEPROM_READ[8] != 'O') || (EEPROM_READ[9] != 'O') || (EEPROM_READ[10] != 'R'))
-//    {
-//        Serial.println("Please Run Setup Program first.");
-//        while(1){yield();}
-//    }
+    Serial.println();
+    Serial.printf("[EEPROM] Current sector   : %u\n", EEPROMr.current());
+//--------------------------------------------------------
+
+    angle_pitch_acc_manual_offset = 0; 
+    angle_roll_acc_manual_offset = 0;
+    roll_axis = EEPROMr.read(6); 
+    pitch_axis = EEPROMr.read(7);
+    yaw_axis = EEPROMr.read(8); 
+    type = EEPROMr.read(9);
+    gyro_address = EEPROMr.read(10);
+    if((EEPROMr.read(11) != 'N') || (EEPROMr.read(12) != 'O') || (EEPROMr.read(13) != 'O') || (EEPROMr.read(14) != 'R'))
+    {
+        Serial.println("Please Run Setup Program first.");
+        while(1){yield();}
+    }
 }
 
 void Menu(){
@@ -538,6 +548,11 @@ void Gyro_Check(){
         if(cal_int != Gyro_Calib_offset){
       Serial.print("Calibrating the gyro");
       //Let's take multiple gyro data samples so we can determine the average gyro offset (calibration).
+     for (int i =0; i < 100 ; i++){              //Take 2000 readings for calibration.
+        if(cal_int % 100 == 0)Serial.print(("."));                //Print dot to indicate calibration.
+        gyro_signalen();                                           //Discarding the first 100 values.
+        delay(3);                                                  //Discarding the first 100 values.
+      } 
       for (cal_int = 0; cal_int < Gyro_Calib_offset ; cal_int ++){                                   //Take 2000 readings for calibration.
         if(cal_int % 100 == 0)Serial.print(".");
         gyro_signalen();                                                                //Read the gyro output.
@@ -554,14 +569,14 @@ void Gyro_Check(){
     }
     else{
           gyro_signalen();
-  gyro_roll_input = (gyro_roll_input * 0.7) + (((float)gyro_roll / 65.5) * 0.3);   //Gyro pid input is deg/sec.
-  gyro_pitch_input = (gyro_pitch_input * 0.7) + (((float)gyro_pitch / 65.5) * 0.3);//Gyro pid input is deg/sec.
-  gyro_yaw_input = (gyro_yaw_input * 0.7) + (((float)gyro_yaw / 65.5) * 0.3);      //Gyro pid input is deg/sec.
+//  gyro_roll_input = (gyro_roll_input * 0.7) + (((float)gyro_roll / 65.5) * 0.3);   //Gyro pid input is deg/sec.
+//  gyro_pitch_input = (gyro_pitch_input * 0.7) + (((float)gyro_pitch / 65.5) * 0.3);//Gyro pid input is deg/sec.
+//  gyro_yaw_input = (gyro_yaw_input * 0.7) + (((float)gyro_yaw / 65.5) * 0.3);      //Gyro pid input is deg/sec.
 
       //Gyro angle calculations
-      angle_pitch += (float)gyro_pitch * 0.0000611;                                           //Calculate the traveled pitch angle and add this to the angle_pitch variable.
-      angle_roll += (float)gyro_roll * 0.0000611;                                             //Calculate the traveled roll angle and add this to the angle_roll variable.
-      angle_yaw += (float)gyro_yaw * 0.0000611;
+      angle_pitch += gyro_pitch * 0.0000611;                                           //Calculate the traveled pitch angle and add this to the angle_pitch variable.
+      angle_roll  += gyro_roll  * 0.0000611;                                             //Calculate the traveled roll angle and add this to the angle_roll variable.
+//      angle_yaw += (float)gyro_yaw * 0.0000611;
       //0.000001066 = 0.0000611 * (3.142(PI) / 180degr) The Arduino sin function is in radians
       angle_pitch -= angle_roll * sin(gyro_yaw * 0.000001066);                         //If the IMU has yawed transfer the roll angle to the pitch angel.
       angle_roll += angle_pitch * sin(gyro_yaw * 0.000001066);                         //If the IMU has yawed transfer the pitch angle to the roll angel.
@@ -572,8 +587,11 @@ void Gyro_Check(){
     angle_pitch_acc = asin((float)acc_y / acc_total_vector) * 57.296;              //Calculate the pitch angle.
   }
   if (abs(acc_x) < acc_total_vector) {                                             //Prevent the asin function to produce a NaN.
-    angle_roll_acc = asin((float)acc_x / acc_total_vector) * 57.296;               //Calculate the roll angle.
-  }     
+    angle_roll_acc = asin((float)acc_x / acc_total_vector) * -57.296;               //Calculate the roll angle.
+  } 
+  angle_pitch_acc -= angle_pitch_acc_manual_offset;                                                   //Accelerometer calibration value for pitch.
+  angle_roll_acc -= angle_roll_acc_manual_offset;                                                    //Accelerometer calibration value for roll.
+
       if(!first_angle){
         angle_pitch = angle_pitch_acc;                                                 //Set the pitch angle to the accelerometer angle.
         angle_roll = angle_roll_acc;                                                   //Set the roll angle to the accelerometer angle.
@@ -585,13 +603,16 @@ void Gyro_Check(){
       }
 
       //We can't print all the data at once. This takes to long and the angular readings will be off.
-      Serial.print("Pitch: ");
-      Serial.print(angle_pitch ,0);
-      Serial.print(" Roll: ");
-      Serial.print(angle_roll ,0);
-      Serial.print(" Yaw: ");
-      Serial.println(gyro_yaw / 65.5 ,0);
-    delay(100);
+      if(loop_counter == 0)Serial.print("Pitch: ");
+      if(loop_counter == 1)Serial.print(angle_pitch ,0);
+      if(loop_counter == 2)Serial.print(" Roll: ");
+      if(loop_counter == 3)Serial.print(angle_roll ,0);
+      if(loop_counter == 4)Serial.print(" Yaw: ");
+      if(loop_counter == 5)Serial.println(gyro_yaw / 65.5 ,0);
+
+      loop_counter ++;
+      if(loop_counter == 60)loop_counter = 0;
+      delay(3);
     }
    }
 Menu();

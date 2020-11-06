@@ -5,6 +5,7 @@
 // Pakistan
 //
 //**************************************
+#include <EEPROM_Rotate.h>
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
 #include <WebSocketsServer.h>
@@ -12,7 +13,6 @@
 #include <Wire.h>
 #include <Hash.h>
 #include "MSP.h"
-#include <EEPROM.h>
 #include "config.h"
 #include <Arduino.h>
 #include <ArduinoOTA.h>
@@ -22,6 +22,23 @@ volatile unsigned int ppm_running=1;
 
 boolean Gyro_Temp = false;
 byte angle_roll_acc_manual_offset , angle_pitch_acc_manual_offset;
+int loop_counter = 0;
+// sensitivity scale factor respective to full scale setting provided in datasheet 
+const uint16_t AccelScaleFactor = 16384;
+const uint16_t GyroScaleFactor = 131;
+
+// MPU6050 few configuration register addresses
+const uint8_t MPU6050_REGISTER_SMPLRT_DIV   =  0x19;
+const uint8_t MPU6050_REGISTER_USER_CTRL    =  0x6A;
+const uint8_t MPU6050_REGISTER_PWR_MGMT_1   =  0x6B;
+const uint8_t MPU6050_REGISTER_PWR_MGMT_2   =  0x6C;
+const uint8_t MPU6050_REGISTER_CONFIG       =  0x1A;
+const uint8_t MPU6050_REGISTER_GYRO_CONFIG  =  0x1B;
+const uint8_t MPU6050_REGISTER_ACCEL_CONFIG =  0x1C;
+const uint8_t MPU6050_REGISTER_FIFO_EN      =  0x23;
+const uint8_t MPU6050_REGISTER_INT_ENABLE   =  0x38;
+const uint8_t MPU6050_REGISTER_ACCEL_XOUT_H =  0x3B;
+const uint8_t MPU6050_REGISTER_SIGNAL_PATH_RESET  = 0x68;
 //=================================================
 //********************Variables
 //=================================================
@@ -41,6 +58,7 @@ extern const char index_html[];
 unsigned int alivecount=0;
 
 MSP msp;
+EEPROM_Rotate EEPROMr;
 
 IPAddress apIP(192, 168, 1, 1);
 DNSServer dnsServer;
@@ -147,42 +165,34 @@ byte search_gyro(int gyro_address, int who_am_i){
 }
 
 void start_gyro(){
-  //Setup the L3G4200D or L3GD20H
   //Setup the MPU-6050
-  if(type == 1){
-    
-    Wire.beginTransmission(address);                             //Start communication with the gyro
-    Wire.write(0x6B);                                            //PWR_MGMT_1 register
-    Wire.write(0x00);                                            //Set to zero to turn on the gyro
+  delay(150);
+ // I2C_Write(gyro_address, MPU6050_REGISTER_SMPLRT_DIV, 0x07);
+  I2C_Write(gyro_address, 0x6B, 0x00);
+// I2C_Write(gyro_address, MPU6050_REGISTER_PWR_MGMT_2, 0x00);
+// I2C_Write(gyro_address, MPU6050_REGISTER_CONFIG, 0x00);
+  I2C_Write(gyro_address, 0x1B, 0x08);//set +/-500 degree/second full scale
+  I2C_Write(gyro_address, 0x1C, 0x10);// set +/- 8g full scale
+    Wire.beginTransmission(gyro_address);                        //Start communication with the address found during search
+    Wire.write(0x1B);                                            //Start reading @ register 0x1B
     Wire.endTransmission();                                      //End the transmission
-    
-    Wire.beginTransmission(address);                             //Start communication with the gyro
-    Wire.write(0x6B);                                            //Start reading @ register 28h and auto increment with every read
-    Wire.endTransmission();                                      //End the transmission
-    Wire.requestFrom(address, 1);                                //Request 1 bytes from the gyro
-    while(Wire.available() < 1);                                 //Wait until the 1 byte is received
-    Serial.print(("Register 0x6B is set to:"));
-    Serial.println(Wire.read(),BIN);
-    
-    Wire.beginTransmission(address);                             //Start communication with the gyro
-    Wire.write(0x1B);                                            //GYRO_CONFIG register
-    Wire.write(0x08);                                            //Set the register bits as 00001000 (500dps full scale)
-    Wire.endTransmission();                                      //End the transmission
-    
-    Wire.beginTransmission(address);                             //Start communication with the gyro (adress 1101001)
-    Wire.write(0x1B);                                            //Start reading @ register 28h and auto increment with every read
-    Wire.endTransmission();                                      //End the transmission
-    Wire.requestFrom(address, 1);                                //Request 1 bytes from the gyro
-    while(Wire.available() < 1);                                 //Wait until the 1 byte is received
-    Serial.print(("Register 0x1B is set to:"));
-    Serial.println(Wire.read(),BIN);
-
-  }
+    Wire.requestFrom(gyro_address, 1);                           //Request 1 bytes from the gyro
+    while(Wire.available() < 1);                                 //Wait until the 6 bytes are received
+    if(Wire.read() != 0x08){                                     //Check if the value is 0x08
+      digitalWrite(12,HIGH);                                     //Turn on the warning led
+      while(1)delay(10);                                         //Stay in this loop for ever
+    }
+//  I2C_Write(gyro_address, MPU6050_REGISTER_FIFO_EN, 0x00);
+//  I2C_Write(gyro_address, MPU6050_REGISTER_INT_ENABLE, 0x01);
+  I2C_Write(gyro_address, MPU6050_REGISTER_CONFIG, 0x03); //Set the register bits as 00000011 (Set Digital Low Pass Filter to ~43Hz)
+//  I2C_Write(gyro_address, MPU6050_REGISTER_SIGNAL_PATH_RESET, 0x00);
+//  I2C_Write(gyro_address, MPU6050_REGISTER_USER_CTRL, 0x00);  delay(300);
+  Serial.printf("MPU6050 started at Adddress %d: ", gyro_address);
 }
 
 void gyro_signalen(){
   if(type == 1){
-    Wire.beginTransmission(address);                             //Start communication with the gyro
+    Wire.beginTransmission(gyro_address);                             //Start communication with the gyro
     Wire.write(0x43);                                            //Start reading @ register 43h and auto increment with every read
     Wire.endTransmission();                                      //End the transmission
     Wire.requestFrom(address,6);                                 //Request 6 bytes from the gyro
@@ -250,34 +260,51 @@ void check_gyro_axes(byte movement){
 }
 
 //===========================================================
+void OTA(){
+    //=======================OTA===========
+
+    ArduinoOTA.onStart([]() {
+        EEPROMr.rotate(false);
+        EEPROMr.commit();
+    String type;
+    if (ArduinoOTA.getCommand() == U_FLASH) {
+      type = "sketch";
+    } else { // U_FS
+      type = "filesystem";
+    }
+
+    // NOTE: if updating FS this would be the place to unmount FS using FS.end()
+    Serial.println("Start updating " + type);
+  });
+  ArduinoOTA.onEnd([]() {
+    Serial.println("\nEnd");
+  });
+  ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
+    Serial.printf("Progress: %u%%\r", (progress / (total / 100)));
+  });
+  ArduinoOTA.onError([](ota_error_t error) {
+    Serial.printf("Error[%u]: ", error);
+    if (error == OTA_AUTH_ERROR) {
+      Serial.println("Auth Failed");
+    } else if (error == OTA_BEGIN_ERROR) {
+      Serial.println("Begin Failed");
+    } else if (error == OTA_CONNECT_ERROR) {
+      Serial.println("Connect Failed");
+    } else if (error == OTA_RECEIVE_ERROR) {
+      Serial.println("Receive Failed");
+    } else if (error == OTA_END_ERROR) {
+      Serial.println("End Failed");
+    }
+            // There's been an error, reenable rotation
+        EEPROMr.rotate(true);
+  });
+
+    ArduinoOTA.begin();
+     Serial.printf("[OTA] Ready\n");
+  }
 //===========================
-void setup() {
-  Serial.begin(115200); //Serial Monitor Display
- // EEPROM.begin(512);
-  pinMode(Motor1,OUTPUT); //Initialing PWM output for Motor Control Pins 
-  pinMode(Motor2,OUTPUT); //Initialing PWM output for Motor Control Pins
-  pinMode(Motor3,OUTPUT); //Initialing PWM output for Motor Control Pins
-  pinMode(Motor4,OUTPUT); //Initialing PWM output for Motor Control Pins
-
-  analogWrite(Motor1,0); //Giving a 0 signal to stop all motors
-  analogWrite(Motor2,0); //Giving a 0 signal to stop all motors
-  analogWrite(Motor3,0); //Giving a 0 signal to stop all motors
-  analogWrite(Motor4,0); //Giving a 0 signal to stop all motors
-
- // pinMode(Battery_Connection, INPUT_ANALOG); // Initializing Battery Connection Pin for Voltage Measurement
- analogRead(Battery_Connection);
-  pinMode(LED, OUTPUT); //Initialing LED 
-
-  Wire.begin(SDA,SCL);
- // Wire.setClock (I2C_Speed);          //I2C Initiliazination
-
-  delay(250);
-
-
-//  WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0));
-
-
-
+void Wifi_Setup(){
+  
   WiFi.softAP(ssid,password,2);
 
   IPAddress myIP = WiFi.softAPIP();
@@ -344,43 +371,38 @@ void setup() {
   interrupts();
   msp.begin(Serial);
 
-  //=======================OTA===========
-    ArduinoOTA.begin();
-    ArduinoOTA.onStart([]() {
-    String type;
-    if (ArduinoOTA.getCommand() == U_FLASH) {
-      type = "sketch";
-    } else { // U_FS
-      type = "filesystem";
-    }
+  }
+//=============================
+void setup() {
+  Serial.begin(115200); //Serial Monitor Display
+  pinMode(Motor1,OUTPUT); //Initialing PWM output for Motor Control Pins 
+  pinMode(Motor2,OUTPUT); //Initialing PWM output for Motor Control Pins
+  pinMode(Motor3,OUTPUT); //Initialing PWM output for Motor Control Pins
+  pinMode(Motor4,OUTPUT); //Initialing PWM output for Motor Control Pins
 
-    // NOTE: if updating FS this would be the place to unmount FS using FS.end()
-    Serial.println("Start updating " + type);
-  });
-  ArduinoOTA.onEnd([]() {
-    Serial.println("\nEnd");
-  });
-  ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
-    Serial.printf("Progress: %u%%\r", (progress / (total / 100)));
-  });
-  ArduinoOTA.onError([](ota_error_t error) {
-    Serial.printf("Error[%u]: ", error);
-    if (error == OTA_AUTH_ERROR) {
-      Serial.println("Auth Failed");
-    } else if (error == OTA_BEGIN_ERROR) {
-      Serial.println("Begin Failed");
-    } else if (error == OTA_CONNECT_ERROR) {
-      Serial.println("Connect Failed");
-    } else if (error == OTA_RECEIVE_ERROR) {
-      Serial.println("Receive Failed");
-    } else if (error == OTA_END_ERROR) {
-      Serial.println("End Failed");
-    }
-  });
-  
+  analogWrite(Motor1,0); //Giving a 0 signal to stop all motors
+  analogWrite(Motor2,0); //Giving a 0 signal to stop all motors
+  analogWrite(Motor3,0); //Giving a 0 signal to stop all motors
+  analogWrite(Motor4,0); //Giving a 0 signal to stop all motors
+
+ // pinMode(Battery_Connection, INPUT_ANALOG); // Initializing Battery Connection Pin for Voltage Measurement
+ analogRead(Battery_Connection);
+  pinMode(LED, OUTPUT); //Initialing LED 
+
+  Wire.begin(SDA,SCL);
+ // Wire.setClock (I2C_Speed);          //I2C Initiliazination
+
+  delay(250);
+
+
+//  WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0));
+
+
 
 Check();
 EEPROM_Commit();
+Wifi_Setup();
+OTA();
 }
 
 unsigned long time_now = 0;
@@ -548,9 +570,8 @@ void Check(){
     Serial.println("If not re run the calibration of gyro and don't move.");
     Serial.println("Move the quadcopter/IMU around to check change in angles.");
     Serial.println("....."); 
-    Serial.println(("Press a to stop 100 Gyro values from printing. "));
     delay(1000);
-      while(Serial.read()!='a'){
+      for(int i=0; i<100; i++){
   gyro_signalen();
    Serial.print("Pitch: ");
    Serial.print(angle_pitch ,0);
@@ -558,9 +579,8 @@ void Check(){
    Serial.print(angle_roll ,0);
    Serial.print(" Yaw: ");
    Serial.println(gyro_yaw / 65.5 ,0);
-   yield();
- }
-
+   delay(3);
+      }
     Serial.println(".....");
     Serial.print((""));
     Serial.println(("==================================================="));
@@ -644,82 +664,84 @@ void Check(){
     }
   }     
   
-
-
   }
 
 
-void EEPROM_Commit()
-{
-// 
-//   if(error == 0){
-//    //If all is good, store the information in the EEPROM
-//    Serial.println((""));
-//    Serial.println(("==================================================="));
-//    Serial.println(("Storing EEPROM information"));
-//    Serial.println(("==================================================="));
-//    Serial.println(("Writing EEPROM"));
-//
- //   EEPROM.write(0,angle_pitch_acc_manual_offset);
+void EEPROM_Commit(){
+    // EEPROM Initialization ---------------------------------------------------
+
+    EEPROMr.size(14);
+    EEPROMr.begin(256);
+
+    Serial.printf("[EEPROM] Sector pool size : %u\n", EEPROMr.size());
+    Serial.printf("[EEPROM] Sectors in use   : ");
+    for (uint32_t i = 0; i < EEPROMr.size(); i++) {
+        if (i>0) Serial.print(", ");
+        Serial.print(EEPROMr.base() - i);
+    }
+    Serial.println();
+    Serial.printf("[EEPROM] Current sector   : %u\n", EEPROMr.current());
+
+   if(error == 0){
+    //If all is good, store the information in the EEPROM
+    Serial.println((""));
+    Serial.println(("==================================================="));
+    Serial.println(("Storing EEPROM information"));
+    Serial.println(("==================================================="));
+    Serial.println(("Writing EEPROM"));
+
+    EEPROMr.write(4,angle_pitch_acc_manual_offset);
 Serial.printf("ANGLE PITCH ACC MANUAL OFFSET : %d \n",angle_pitch_acc_manual_offset);
-  delay(100);
- //   EEPROM.write(1,angle_roll_acc_manual_offset); 
-      delay(100);
+   EEPROMr.write(5,angle_roll_acc_manual_offset); 
 Serial.printf("angle_roll_acc_manual_offset : %d \n",angle_roll_acc_manual_offset);
-  //  EEPROM.write(2, roll_axis); 
-      delay(100); 
+    EEPROMr.write(6, roll_axis); 
 Serial.printf("roll_axis: %d \n",roll_axis);
-  //  EEPROM.write(3, pitch_axis);
-          delay(100); 
+    EEPROMr.write(7, pitch_axis); 
 Serial.printf("pitch_axis : %d \n",pitch_axis);
-  //  EEPROM.write(4, yaw_axis);
-          delay(100);  
+    EEPROMr.write(8, yaw_axis);
 Serial.printf("yaw_axis : %d \n",yaw_axis);
-      delay(100); 
-  //  EEPROM.write(5, type);  
-          delay(100); 
+    EEPROMr.write(9, type);   
 Serial.printf("type : %d \n", type);
-  //  EEPROM.write(6, gyro_address); 
-          delay(100); 
+   EEPROMr.write(10, gyro_address);  
 Serial.printf("gyro_address : %d \n",gyro_address);
-//    //Write the EEPROM signature
-  //  EEPROM.write(7, 'N');  
-          delay(100); 
-  //  EEPROM.write(8, 'O');
-          delay(100);   
-  //  EEPROM.write(9, 'O');
-          delay(100);  
-  //  EEPROM.write(10, 'R');
-          delay(100); 
-        delay(1000);
+    //Write the EEPROM signature
+    EEPROMr.write(11, 'N');   
+    EEPROMr.write(12, 'O');
+    EEPROMr.write(13, 'O');
+    EEPROMr.write(14, 'R');
     Serial.println(("Done!"));
- //   EEPROM.commit();
-//    //To make sure evrything is ok, verify the EEPROM data.
-//    Serial.println(("Verify EEPROM data"));
-//    delay(1000);
-//    if(roll_axis != EEPROM.read(2))error = 1;
-//    
-//    if(pitch_axis != EEPROM.read(3))error = 1;
-//    
-//    if(yaw_axis != EEPROM.read(4))error = 1;
-//    
-//    if(type != EEPROM.read(5))error = 1;
-//    
-//    if(gyro_address != EEPROM.read(6))error = 1;
-//    
-//    if('N' != EEPROM.read(7))error = 1;
-//    if('O' != EEPROM.read(8))error = 1;
-//    if('O' != EEPROM.read(9))error = 1;
-//    if('R' != EEPROM.read(10))error = 1;
-//  Serial.println(EEPROM.read(5));
-//    if(error == 1)Serial.println(("EEPROM verification failed!!! (ERROR )"));
-//    else Serial.println(("Verification done"));
+    EEPROMr.commit();
+    //To make sure evrything is ok, verify the EEPROM data.
+    Serial.println(("Verify EEPROM data"));
+    delay(1000);
+    if(roll_axis != EEPROMr.read(6))error = 1;
     
-//  }
+    if(pitch_axis != EEPROMr.read(7))error = 1;
+    
+    if(yaw_axis != EEPROMr.read(8))error = 1;
+    
+    if(type != EEPROMr.read(9))error = 1;
+    
+    if(gyro_address != EEPROMr.read(10))error = 1;
+    
+    if('N' != EEPROMr.read(11))error = 1;
+    if('O' != EEPROMr.read(12))error = 1;
+    if('O' != EEPROMr.read(13))error = 1;
+    if('R' != EEPROMr.read(14))error = 1;
+    if(error == 1)Serial.println(("EEPROM verification failed!!! (ERROR )"));
+    else Serial.println(("Verification done"));    
+  }
   
   
   if(error == 0){
     Serial.println(("Setup is finished."));
   }
 
+}
+
+void I2C_Write(uint8_t deviceAddress, uint8_t regAddress, uint8_t data){
+  Wire.beginTransmission(deviceAddress);
+  Wire.write(regAddress);
+  Wire.write(data);
+  Wire.endTransmission();
 }
