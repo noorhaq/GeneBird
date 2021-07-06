@@ -1,0 +1,674 @@
+Component: ARM Compiler 5.06 update 6 (build 750) Tool: armlink [4d35ed]
+
+==============================================================================
+
+Section Cross References
+
+    mpu.o(i.MPUtestConnection) refers to mpu.o(i.UARTprintf) for UARTprintf
+    mpu.o(i.MPUtestConnection) refers to uartstdio.o(i.UARTprintf) for UARTprintf
+    mpu.o(i.MPUtestConnection) refers to mpu.o(.data) for WhoAmI
+    mpu.o(i.UARTStdioConfig) refers to sysctl.o(i.SysCtlPeripheralPresent) for SysCtlPeripheralPresent
+    mpu.o(i.UARTStdioConfig) refers to sysctl.o(i.SysCtlPeripheralEnable) for SysCtlPeripheralEnable
+    mpu.o(i.UARTStdioConfig) refers to uart.o(i.UARTConfigSetExpClk) for UARTConfigSetExpClk
+    mpu.o(i.UARTStdioConfig) refers to uart.o(i.UARTEnable) for UARTEnable
+    mpu.o(i.UARTStdioConfig) refers to mpu.o(.constdata) for g_ui32UARTPeriph
+    mpu.o(i.UARTStdioConfig) refers to mpu.o(.data) for g_ui32Base
+    mpu.o(i.UARTgetc) refers to uart.o(i.UARTCharGet) for UARTCharGet
+    mpu.o(i.UARTgetc) refers to mpu.o(.data) for g_ui32Base
+    mpu.o(i.UARTgets) refers to uart.o(i.UARTCharGet) for UARTCharGet
+    mpu.o(i.UARTgets) refers to mpu.o(i.UARTwrite) for UARTwrite
+    mpu.o(i.UARTgets) refers to uartstdio.o(i.UARTwrite) for UARTwrite
+    mpu.o(i.UARTgets) refers to uart.o(i.UARTCharPut) for UARTCharPut
+    mpu.o(i.UARTgets) refers to mpu.o(.data) for g_ui32Base
+    mpu.o(i.UARTprintf) refers to mpu.o(i.UARTvprintf) for UARTvprintf
+    mpu.o(i.UARTprintf) refers to uartstdio.o(i.UARTvprintf) for UARTvprintf
+    mpu.o(i.UARTvprintf) refers to mpu.o(i.UARTwrite) for UARTwrite
+    mpu.o(i.UARTvprintf) refers to uartstdio.o(i.UARTwrite) for UARTwrite
+    mpu.o(i.UARTvprintf) refers to mpu.o(.constdata) for g_pcHex
+    mpu.o(i.UARTwrite) refers to uart.o(i.UARTCharPut) for UARTCharPut
+    mpu.o(i.UARTwrite) refers to mpu.o(.data) for g_ui32Base
+    mpu.o(i.dataReadyMPU) refers to gpio.o(i.GPIOPinRead) for GPIOPinRead
+    mpu.o(i.getGyroX) refers to mpu.o(.bss) for gyroXos
+    mpu.o(i.getGyroY) refers to mpu.o(.bss) for gyroYos
+    mpu.o(i.getGyroZ) refers to mpu.o(.data) for gyroZos
+    mpu.o(i.getMPUangleX) refers to mpu.o(.bss) for fiXos
+    mpu.o(i.getMPUangleY) refers to mpu.o(.bss) for fiYos
+    mpu.o(i.initMPU6050) refers to sysctl.o(i.SysCtlPeripheralEnable) for SysCtlPeripheralEnable
+    mpu.o(i.initMPU6050) refers to sysctl.o(.emb_text) for SysCtlDelay
+    mpu.o(i.initMPU6050) refers to gpio.o(i.GPIOPinTypeGPIOInput) for GPIOPinTypeGPIOInput
+    mpu.o(i.initMPU6050) refers to gpio.o(i.GPIOIntTypeSet) for GPIOIntTypeSet
+    mpu.o(i.initMPU6050) refers to gpio.o(i.GPIOIntRegister) for GPIOIntRegister
+    mpu.o(i.initMPU6050) refers to interrupt.o(i.IntPrioritySet) for IntPrioritySet
+    mpu.o(i.initMPU6050) refers to gpio.o(i.GPIOIntEnable) for GPIOIntEnable
+    mpu.o(i.initMPU6050) refers to mpu.o(i.readMPU) for readMPU
+    mpu.o(i.readMPU) refers to gpio.o(i.GPIOIntStatus) for GPIOIntStatus
+    mpu.o(i.readMPU) refers to gpio.o(i.GPIOIntClear) for GPIOIntClear
+    mpu.o(i.readMPU) refers to dflt_clz.o(x$fpl$dflt) for __aeabi_i2d
+    mpu.o(i.readMPU) refers to atan2.o(i.__hardfp_atan2) for __hardfp_atan2
+    mpu.o(i.readMPU) refers to basic.o(x$fpl$basic) for __aeabi_dneg
+    mpu.o(i.readMPU) refers to d2f.o(x$fpl$d2f) for __aeabi_d2f
+    mpu.o(i.readMPU) refers to mpu.o(i.UARTprintf) for UARTprintf
+    mpu.o(i.readMPU) refers to uartstdio.o(i.UARTprintf) for UARTprintf
+    mpu.o(i.readMPU) refers to mpu.o(.data) for accXout_H
+    mpu.o(i.readMPU) refers to mpu.o(.bss) for accXos
+    mpu.o(.constdata) refers to mpu.o(.conststring) for .conststring
+    uart_1.o(i.initUart) refers to sysctl.o(i.SysCtlPeripheralEnable) for SysCtlPeripheralEnable
+    uart_1.o(i.initUart) refers to sysctl.o(.emb_text) for SysCtlDelay
+    uart_1.o(i.initUart) refers to gpio.o(i.GPIOPinConfigure) for GPIOPinConfigure
+    uart_1.o(i.initUart) refers to uart.o(i.UARTClockSourceSet) for UARTClockSourceSet
+    uart_1.o(i.initUart) refers to gpio.o(i.GPIOPinTypeUART) for GPIOPinTypeUART
+    uart_1.o(i.initUart) refers to mpu.o(i.UARTStdioConfig) for UARTStdioConfig
+    uart_1.o(i.initUart) refers to uartstdio.o(i.UARTStdioConfig) for UARTStdioConfig
+    adc.o(i.ADCIntRegister) refers to adc.o(i._ADCIntNumberGet) for _ADCIntNumberGet
+    adc.o(i.ADCIntRegister) refers to interrupt.o(i.IntRegister) for IntRegister
+    adc.o(i.ADCIntRegister) refers to interrupt.o(i.IntEnable) for IntEnable
+    adc.o(i.ADCIntUnregister) refers to adc.o(i._ADCIntNumberGet) for _ADCIntNumberGet
+    adc.o(i.ADCIntUnregister) refers to interrupt.o(i.IntDisable) for IntDisable
+    adc.o(i.ADCIntUnregister) refers to interrupt.o(i.IntUnregister) for IntUnregister
+    adc.o(i.ADCSoftwareOversampleConfigure) refers to adc.o(.data) for g_pui8OversampleFactor
+    adc.o(i.ADCSoftwareOversampleDataGet) refers to adc.o(.data) for g_pui8OversampleFactor
+    adc.o(i.ADCSoftwareOversampleStepConfigure) refers to adc.o(.data) for g_pui8OversampleFactor
+    aes.o(i.AESDataAuth) refers to aes.o(i.AESLengthSet) for AESLengthSet
+    aes.o(i.AESDataAuth) refers to aes.o(i.AESDataWrite) for AESDataWrite
+    aes.o(i.AESDataAuth) refers to aes.o(i.AESTagRead) for AESTagRead
+    aes.o(i.AESDataProcess) refers to aes.o(i.AESLengthSet) for AESLengthSet
+    aes.o(i.AESDataProcess) refers to aes.o(i.AESDataWrite) for AESDataWrite
+    aes.o(i.AESDataProcess) refers to aes.o(i.AESDataRead) for AESDataRead
+    aes.o(i.AESDataProcessAuth) refers to aes.o(i.AESLengthSet) for AESLengthSet
+    aes.o(i.AESDataProcessAuth) refers to aes.o(i.AESAuthLengthSet) for AESAuthLengthSet
+    aes.o(i.AESDataProcessAuth) refers to aes.o(i.AESDataWrite) for AESDataWrite
+    aes.o(i.AESDataProcessAuth) refers to aes.o(i.AESDataRead) for AESDataRead
+    aes.o(i.AESDataProcessAuth) refers to aes.o(i.AESTagRead) for AESTagRead
+    aes.o(i.AESIntRegister) refers to interrupt.o(i.IntRegister) for IntRegister
+    aes.o(i.AESIntRegister) refers to interrupt.o(i.IntEnable) for IntEnable
+    aes.o(i.AESIntUnregister) refers to interrupt.o(i.IntDisable) for IntDisable
+    aes.o(i.AESIntUnregister) refers to interrupt.o(i.IntUnregister) for IntUnregister
+    can.o(i.CANBitRateSet) refers to can.o(.constdata) for g_ui16CANBitValues
+    can.o(i.CANIntRegister) refers to can.o(i._CANIntNumberGet) for _CANIntNumberGet
+    can.o(i.CANIntRegister) refers to interrupt.o(i.IntRegister) for IntRegister
+    can.o(i.CANIntRegister) refers to interrupt.o(i.IntEnable) for IntEnable
+    can.o(i.CANIntUnregister) refers to can.o(i._CANIntNumberGet) for _CANIntNumberGet
+    can.o(i.CANIntUnregister) refers to interrupt.o(i.IntDisable) for IntDisable
+    can.o(i.CANIntUnregister) refers to interrupt.o(i.IntUnregister) for IntUnregister
+    can.o(i.CANMessageGet) refers to can.o(i._CANDataRegRead) for _CANDataRegRead
+    can.o(i.CANMessageSet) refers to can.o(i._CANDataRegWrite) for _CANDataRegWrite
+    comp.o(i.ComparatorIntRegister) refers to interrupt.o(i.IntRegister) for IntRegister
+    comp.o(i.ComparatorIntRegister) refers to interrupt.o(i.IntEnable) for IntEnable
+    comp.o(i.ComparatorIntUnregister) refers to interrupt.o(i.IntDisable) for IntDisable
+    comp.o(i.ComparatorIntUnregister) refers to interrupt.o(i.IntUnregister) for IntUnregister
+    crc.o(i.CRCDataProcess) refers to crc.o(i.CRCResultRead) for CRCResultRead
+    des.o(i.DESDataProcess) refers to des.o(i.DESDataWriteNonBlocking) for DESDataWriteNonBlocking
+    des.o(i.DESDataProcess) refers to des.o(i.DESDataReadNonBlocking) for DESDataReadNonBlocking
+    des.o(i.DESIntRegister) refers to interrupt.o(i.IntRegister) for IntRegister
+    des.o(i.DESIntRegister) refers to interrupt.o(i.IntEnable) for IntEnable
+    des.o(i.DESIntUnregister) refers to interrupt.o(i.IntDisable) for IntDisable
+    des.o(i.DESIntUnregister) refers to interrupt.o(i.IntUnregister) for IntUnregister
+    eeprom.o(i.EEPROMInit) refers to sysctl.o(.emb_text) for SysCtlDelay
+    eeprom.o(i.EEPROMInit) refers to eeprom.o(i._EEPROMWaitForDone) for _EEPROMWaitForDone
+    eeprom.o(i.EEPROMInit) refers to sysctl.o(i.SysCtlPeripheralReset) for SysCtlPeripheralReset
+    eeprom.o(i.EEPROMIntClear) refers to eeprom.o(i._EEPROMSectorMaskClear) for _EEPROMSectorMaskClear
+    eeprom.o(i.EEPROMMassErase) refers to eeprom.o(i._EEPROMSectorMaskClear) for _EEPROMSectorMaskClear
+    eeprom.o(i.EEPROMMassErase) refers to eeprom.o(i._EEPROMWaitForDone) for _EEPROMWaitForDone
+    eeprom.o(i.EEPROMMassErase) refers to sysctl.o(i.SysCtlPeripheralReset) for SysCtlPeripheralReset
+    eeprom.o(i.EEPROMMassErase) refers to sysctl.o(.emb_text) for SysCtlDelay
+    eeprom.o(i.EEPROMProgram) refers to eeprom.o(i._EEPROMSectorMaskSet) for _EEPROMSectorMaskSet
+    eeprom.o(i.EEPROMProgram) refers to sysctl.o(.emb_text) for SysCtlDelay
+    eeprom.o(i.EEPROMProgram) refers to eeprom.o(i._EEPROMSectorMaskClear) for _EEPROMSectorMaskClear
+    eeprom.o(i.EEPROMProgramNonBlocking) refers to eeprom.o(i._EEPROMSectorMaskSet) for _EEPROMSectorMaskSet
+    eeprom.o(i._EEPROMSectorMaskClear) refers to sysctl.o(.emb_text) for SysCtlDelay
+    eeprom.o(i._EEPROMSectorMaskSet) refers to sysctl.o(.emb_text) for SysCtlDelay
+    emac.o(i.EMACHashFilterBitCalculate) refers to sw_crc.o(i.Crc32) for Crc32
+    emac.o(i.EMACInit) refers to emac.o(.constdata) for g_pi16MIIClockDiv
+    emac.o(i.EMACIntRegister) refers to interrupt.o(i.IntRegister) for IntRegister
+    emac.o(i.EMACIntRegister) refers to interrupt.o(i.IntEnable) for IntEnable
+    emac.o(i.EMACIntUnregister) refers to interrupt.o(i.IntDisable) for IntDisable
+    emac.o(i.EMACIntUnregister) refers to interrupt.o(i.IntUnregister) for IntUnregister
+    emac.o(i.EMACPHYConfigSet) refers to sysctl.o(i.SysCtlPeripheralReset) for SysCtlPeripheralReset
+    emac.o(i.EMACPHYConfigSet) refers to sysctl.o(i.SysCtlPeripheralReady) for SysCtlPeripheralReady
+    emac.o(i.EMACPHYConfigSet) refers to sysctl.o(.emb_text) for SysCtlDelay
+    emac.o(i.EMACPHYConfigSet) refers to emac.o(i.EMACReset) for EMACReset
+    emac.o(i.EMACPHYExtendedRead) refers to emac.o(i.EMACPHYWrite) for EMACPHYWrite
+    emac.o(i.EMACPHYExtendedRead) refers to emac.o(i.EMACPHYRead) for EMACPHYRead
+    emac.o(i.EMACPHYExtendedWrite) refers to emac.o(i.EMACPHYWrite) for EMACPHYWrite
+    emac.o(i.EMACPHYMMDRead) refers to emac.o(i.EMACPHYWrite) for EMACPHYWrite
+    emac.o(i.EMACPHYMMDRead) refers to emac.o(i.EMACPHYRead) for EMACPHYRead
+    emac.o(i.EMACPHYMMDWrite) refers to emac.o(i.EMACPHYWrite) for EMACPHYWrite
+    emac.o(i.EMACPHYPowerOff) refers to emac.o(i.EMACPHYRead) for EMACPHYRead
+    emac.o(i.EMACPHYPowerOff) refers to emac.o(i.EMACPHYWrite) for EMACPHYWrite
+    emac.o(i.EMACPHYPowerOn) refers to emac.o(i.EMACPHYRead) for EMACPHYRead
+    emac.o(i.EMACPHYPowerOn) refers to emac.o(i.EMACPHYWrite) for EMACPHYWrite
+    emac.o(i.EMACVLANHashFilterBitCalculate) refers to sw_crc.o(i.Crc32) for Crc32
+    epi.o(i.EPIIntRegister) refers to epi.o(i._EPIIntNumberGet) for _EPIIntNumberGet
+    epi.o(i.EPIIntRegister) refers to interrupt.o(i.IntRegister) for IntRegister
+    epi.o(i.EPIIntRegister) refers to interrupt.o(i.IntEnable) for IntEnable
+    epi.o(i.EPIIntUnregister) refers to epi.o(i._EPIIntNumberGet) for _EPIIntNumberGet
+    epi.o(i.EPIIntUnregister) refers to interrupt.o(i.IntDisable) for IntDisable
+    epi.o(i.EPIIntUnregister) refers to interrupt.o(i.IntUnregister) for IntUnregister
+    flash.o(i.FlashIntRegister) refers to interrupt.o(i.IntRegister) for IntRegister
+    flash.o(i.FlashIntRegister) refers to interrupt.o(i.IntEnable) for IntEnable
+    flash.o(i.FlashIntUnregister) refers to interrupt.o(i.IntDisable) for IntDisable
+    flash.o(i.FlashIntUnregister) refers to interrupt.o(i.IntUnregister) for IntUnregister
+    flash.o(i.FlashProtectGet) refers to flash.o(.constdata) for g_pui32FMPRERegs
+    flash.o(i.FlashProtectSet) refers to flash.o(.constdata) for g_pui32FMPRERegs
+    gpio.o(i.GPIOIntRegister) refers to gpio.o(i._GPIOIntNumberGet) for _GPIOIntNumberGet
+    gpio.o(i.GPIOIntRegister) refers to interrupt.o(i.IntRegister) for IntRegister
+    gpio.o(i.GPIOIntRegister) refers to interrupt.o(i.IntEnable) for IntEnable
+    gpio.o(i.GPIOIntRegisterPin) refers to gpio.o(i._GPIOIntNumberGet) for _GPIOIntNumberGet
+    gpio.o(i.GPIOIntRegisterPin) refers to interrupt.o(i.IntRegister) for IntRegister
+    gpio.o(i.GPIOIntRegisterPin) refers to interrupt.o(i.IntEnable) for IntEnable
+    gpio.o(i.GPIOIntUnregister) refers to gpio.o(i._GPIOIntNumberGet) for _GPIOIntNumberGet
+    gpio.o(i.GPIOIntUnregister) refers to interrupt.o(i.IntDisable) for IntDisable
+    gpio.o(i.GPIOIntUnregister) refers to interrupt.o(i.IntUnregister) for IntUnregister
+    gpio.o(i.GPIOIntUnregisterPin) refers to gpio.o(i._GPIOIntNumberGet) for _GPIOIntNumberGet
+    gpio.o(i.GPIOIntUnregisterPin) refers to interrupt.o(i.IntDisable) for IntDisable
+    gpio.o(i.GPIOIntUnregisterPin) refers to interrupt.o(i.IntUnregister) for IntUnregister
+    gpio.o(i.GPIOPinConfigure) refers to gpio.o(.constdata) for g_pui32GPIOBaseAddrs
+    gpio.o(i.GPIOPinTypeADC) refers to gpio.o(i.GPIODirModeSet) for GPIODirModeSet
+    gpio.o(i.GPIOPinTypeADC) refers to gpio.o(i.GPIOPadConfigSet) for GPIOPadConfigSet
+    gpio.o(i.GPIOPinTypeCAN) refers to gpio.o(i.GPIODirModeSet) for GPIODirModeSet
+    gpio.o(i.GPIOPinTypeCAN) refers to gpio.o(i.GPIOPadConfigSet) for GPIOPadConfigSet
+    gpio.o(i.GPIOPinTypeComparator) refers to gpio.o(i.GPIODirModeSet) for GPIODirModeSet
+    gpio.o(i.GPIOPinTypeComparator) refers to gpio.o(i.GPIOPadConfigSet) for GPIOPadConfigSet
+    gpio.o(i.GPIOPinTypeComparatorOutput) refers to gpio.o(i.GPIODirModeSet) for GPIODirModeSet
+    gpio.o(i.GPIOPinTypeComparatorOutput) refers to gpio.o(i.GPIOPadConfigSet) for GPIOPadConfigSet
+    gpio.o(i.GPIOPinTypeDIVSCLK) refers to gpio.o(i.GPIODirModeSet) for GPIODirModeSet
+    gpio.o(i.GPIOPinTypeDIVSCLK) refers to gpio.o(i.GPIOPadConfigSet) for GPIOPadConfigSet
+    gpio.o(i.GPIOPinTypeEPI) refers to gpio.o(i.GPIODirModeSet) for GPIODirModeSet
+    gpio.o(i.GPIOPinTypeEPI) refers to gpio.o(i.GPIOPadConfigSet) for GPIOPadConfigSet
+    gpio.o(i.GPIOPinTypeEthernetLED) refers to gpio.o(i.GPIODirModeSet) for GPIODirModeSet
+    gpio.o(i.GPIOPinTypeEthernetLED) refers to gpio.o(i.GPIOPadConfigSet) for GPIOPadConfigSet
+    gpio.o(i.GPIOPinTypeEthernetMII) refers to gpio.o(i.GPIODirModeSet) for GPIODirModeSet
+    gpio.o(i.GPIOPinTypeEthernetMII) refers to gpio.o(i.GPIOPadConfigSet) for GPIOPadConfigSet
+    gpio.o(i.GPIOPinTypeGPIOInput) refers to gpio.o(i.GPIODirModeSet) for GPIODirModeSet
+    gpio.o(i.GPIOPinTypeGPIOInput) refers to gpio.o(i.GPIOPadConfigSet) for GPIOPadConfigSet
+    gpio.o(i.GPIOPinTypeGPIOOutput) refers to gpio.o(i.GPIOPadConfigSet) for GPIOPadConfigSet
+    gpio.o(i.GPIOPinTypeGPIOOutput) refers to gpio.o(i.GPIODirModeSet) for GPIODirModeSet
+    gpio.o(i.GPIOPinTypeGPIOOutputOD) refers to gpio.o(i.GPIOPadConfigSet) for GPIOPadConfigSet
+    gpio.o(i.GPIOPinTypeGPIOOutputOD) refers to gpio.o(i.GPIODirModeSet) for GPIODirModeSet
+    gpio.o(i.GPIOPinTypeHibernateRTCCLK) refers to gpio.o(i.GPIODirModeSet) for GPIODirModeSet
+    gpio.o(i.GPIOPinTypeHibernateRTCCLK) refers to gpio.o(i.GPIOPadConfigSet) for GPIOPadConfigSet
+    gpio.o(i.GPIOPinTypeI2C) refers to gpio.o(i.GPIODirModeSet) for GPIODirModeSet
+    gpio.o(i.GPIOPinTypeI2C) refers to gpio.o(i.GPIOPadConfigSet) for GPIOPadConfigSet
+    gpio.o(i.GPIOPinTypeI2CSCL) refers to gpio.o(i.GPIODirModeSet) for GPIODirModeSet
+    gpio.o(i.GPIOPinTypeI2CSCL) refers to gpio.o(i.GPIOPadConfigSet) for GPIOPadConfigSet
+    gpio.o(i.GPIOPinTypeLCD) refers to gpio.o(i.GPIODirModeSet) for GPIODirModeSet
+    gpio.o(i.GPIOPinTypeLCD) refers to gpio.o(i.GPIOPadConfigSet) for GPIOPadConfigSet
+    gpio.o(i.GPIOPinTypeOneWire) refers to gpio.o(i.GPIODirModeSet) for GPIODirModeSet
+    gpio.o(i.GPIOPinTypeOneWire) refers to gpio.o(i.GPIOPadConfigSet) for GPIOPadConfigSet
+    gpio.o(i.GPIOPinTypePWM) refers to gpio.o(i.GPIODirModeSet) for GPIODirModeSet
+    gpio.o(i.GPIOPinTypePWM) refers to gpio.o(i.GPIOPadConfigSet) for GPIOPadConfigSet
+    gpio.o(i.GPIOPinTypeQEI) refers to gpio.o(i.GPIODirModeSet) for GPIODirModeSet
+    gpio.o(i.GPIOPinTypeQEI) refers to gpio.o(i.GPIOPadConfigSet) for GPIOPadConfigSet
+    gpio.o(i.GPIOPinTypeSSI) refers to gpio.o(i.GPIODirModeSet) for GPIODirModeSet
+    gpio.o(i.GPIOPinTypeSSI) refers to gpio.o(i.GPIOPadConfigSet) for GPIOPadConfigSet
+    gpio.o(i.GPIOPinTypeTimer) refers to gpio.o(i.GPIODirModeSet) for GPIODirModeSet
+    gpio.o(i.GPIOPinTypeTimer) refers to gpio.o(i.GPIOPadConfigSet) for GPIOPadConfigSet
+    gpio.o(i.GPIOPinTypeTrace) refers to gpio.o(i.GPIODirModeSet) for GPIODirModeSet
+    gpio.o(i.GPIOPinTypeTrace) refers to gpio.o(i.GPIOPadConfigSet) for GPIOPadConfigSet
+    gpio.o(i.GPIOPinTypeUART) refers to gpio.o(i.GPIODirModeSet) for GPIODirModeSet
+    gpio.o(i.GPIOPinTypeUART) refers to gpio.o(i.GPIOPadConfigSet) for GPIOPadConfigSet
+    gpio.o(i.GPIOPinTypeUSBAnalog) refers to gpio.o(i.GPIODirModeSet) for GPIODirModeSet
+    gpio.o(i.GPIOPinTypeUSBAnalog) refers to gpio.o(i.GPIOPadConfigSet) for GPIOPadConfigSet
+    gpio.o(i.GPIOPinTypeUSBDigital) refers to gpio.o(i.GPIODirModeSet) for GPIODirModeSet
+    gpio.o(i.GPIOPinTypeUSBDigital) refers to gpio.o(i.GPIOPadConfigSet) for GPIOPadConfigSet
+    gpio.o(i.GPIOPinTypeWakeHigh) refers to gpio.o(i.GPIODirModeSet) for GPIODirModeSet
+    gpio.o(i.GPIOPinTypeWakeHigh) refers to gpio.o(i.GPIOPadConfigSet) for GPIOPadConfigSet
+    gpio.o(i.GPIOPinTypeWakeLow) refers to gpio.o(i.GPIODirModeSet) for GPIODirModeSet
+    gpio.o(i.GPIOPinTypeWakeLow) refers to gpio.o(i.GPIOPadConfigSet) for GPIOPadConfigSet
+    gpio.o(i._GPIOIntNumberGet) refers to gpio.o(.constdata) for g_ppui32GPIOIntMapBlizzard
+    hibernate.o(i.HibernateBatCheckStart) refers to hibernate.o(i._HibernateWriteComplete) for _HibernateWriteComplete
+    hibernate.o(i.HibernateCalendarMatchSet) refers to hibernate.o(i._HibernateCalendarSet) for _HibernateCalendarSet
+    hibernate.o(i.HibernateCalendarSet) refers to hibernate.o(i._HibernateCalendarSet) for _HibernateCalendarSet
+    hibernate.o(i.HibernateClockConfig) refers to hibernate.o(i._HibernateWriteComplete) for _HibernateWriteComplete
+    hibernate.o(i.HibernateCounterMode) refers to hibernate.o(i._HibernateWriteComplete) for _HibernateWriteComplete
+    hibernate.o(i.HibernateDataSet) refers to hibernate.o(i._HibernateWriteComplete) for _HibernateWriteComplete
+    hibernate.o(i.HibernateDisable) refers to hibernate.o(i._HibernateWriteComplete) for _HibernateWriteComplete
+    hibernate.o(i.HibernateEnableExpClk) refers to hibernate.o(i._HibernateWriteComplete) for _HibernateWriteComplete
+    hibernate.o(i.HibernateGPIORetentionDisable) refers to hibernate.o(i._HibernateWriteComplete) for _HibernateWriteComplete
+    hibernate.o(i.HibernateGPIORetentionEnable) refers to hibernate.o(i._HibernateWriteComplete) for _HibernateWriteComplete
+    hibernate.o(i.HibernateIntClear) refers to hibernate.o(i._HibernateWriteComplete) for _HibernateWriteComplete
+    hibernate.o(i.HibernateIntDisable) refers to hibernate.o(i._HibernateWriteComplete) for _HibernateWriteComplete
+    hibernate.o(i.HibernateIntEnable) refers to hibernate.o(i._HibernateWriteComplete) for _HibernateWriteComplete
+    hibernate.o(i.HibernateIntRegister) refers to hibernate.o(i._HibernateIntNumberGet) for _HibernateIntNumberGet
+    hibernate.o(i.HibernateIntRegister) refers to interrupt.o(i.IntRegister) for IntRegister
+    hibernate.o(i.HibernateIntRegister) refers to interrupt.o(i.IntEnable) for IntEnable
+    hibernate.o(i.HibernateIntUnregister) refers to hibernate.o(i._HibernateIntNumberGet) for _HibernateIntNumberGet
+    hibernate.o(i.HibernateIntUnregister) refers to interrupt.o(i.IntDisable) for IntDisable
+    hibernate.o(i.HibernateIntUnregister) refers to interrupt.o(i.IntUnregister) for IntUnregister
+    hibernate.o(i.HibernateLowBatSet) refers to hibernate.o(i._HibernateWriteComplete) for _HibernateWriteComplete
+    hibernate.o(i.HibernateRTCDisable) refers to hibernate.o(i._HibernateWriteComplete) for _HibernateWriteComplete
+    hibernate.o(i.HibernateRTCEnable) refers to hibernate.o(i._HibernateWriteComplete) for _HibernateWriteComplete
+    hibernate.o(i.HibernateRTCMatchSet) refers to hibernate.o(i._HibernateWriteComplete) for _HibernateWriteComplete
+    hibernate.o(i.HibernateRTCSSMatchSet) refers to hibernate.o(i._HibernateWriteComplete) for _HibernateWriteComplete
+    hibernate.o(i.HibernateRTCSet) refers to hibernate.o(i._HibernateWriteComplete) for _HibernateWriteComplete
+    hibernate.o(i.HibernateRTCTrimSet) refers to hibernate.o(i._HibernateWriteComplete) for _HibernateWriteComplete
+    hibernate.o(i.HibernateRequest) refers to hibernate.o(i._HibernateWriteComplete) for _HibernateWriteComplete
+    hibernate.o(i.HibernateTamperDisable) refers to hibernate.o(i._HibernateWriteComplete) for _HibernateWriteComplete
+    hibernate.o(i.HibernateTamperEnable) refers to hibernate.o(i._HibernateWriteComplete) for _HibernateWriteComplete
+    hibernate.o(i.HibernateTamperEventsClear) refers to hibernate.o(i._HibernateWriteComplete) for _HibernateWriteComplete
+    hibernate.o(i.HibernateTamperEventsClearNoLock) refers to hibernate.o(i._HibernateWriteComplete) for _HibernateWriteComplete
+    hibernate.o(i.HibernateTamperEventsConfig) refers to hibernate.o(i._HibernateWriteComplete) for _HibernateWriteComplete
+    hibernate.o(i.HibernateTamperExtOscRecover) refers to hibernate.o(i._HibernateWriteComplete) for _HibernateWriteComplete
+    hibernate.o(i.HibernateTamperExtOscValid) refers to hibernate.o(i.HibernateTamperStatusGet) for HibernateTamperStatusGet
+    hibernate.o(i.HibernateTamperIODisable) refers to hibernate.o(i._HibernateWriteComplete) for _HibernateWriteComplete
+    hibernate.o(i.HibernateTamperIOEnable) refers to hibernate.o(i._HibernateWriteComplete) for _HibernateWriteComplete
+    hibernate.o(i.HibernateTamperLock) refers to hibernate.o(i._HibernateWriteComplete) for _HibernateWriteComplete
+    hibernate.o(i.HibernateTamperUnLock) refers to hibernate.o(i._HibernateWriteComplete) for _HibernateWriteComplete
+    hibernate.o(i.HibernateWakeSet) refers to hibernate.o(i._HibernateWriteComplete) for _HibernateWriteComplete
+    hibernate.o(i._HibernateCalendarSet) refers to hibernate.o(i._HibernateWriteComplete) for _HibernateWriteComplete
+    i2c.o(i.I2CIntRegister) refers to i2c.o(i._I2CIntNumberGet) for _I2CIntNumberGet
+    i2c.o(i.I2CIntRegister) refers to interrupt.o(i.IntRegister) for IntRegister
+    i2c.o(i.I2CIntRegister) refers to interrupt.o(i.IntEnable) for IntEnable
+    i2c.o(i.I2CIntUnregister) refers to i2c.o(i._I2CIntNumberGet) for _I2CIntNumberGet
+    i2c.o(i.I2CIntUnregister) refers to interrupt.o(i.IntDisable) for IntDisable
+    i2c.o(i.I2CIntUnregister) refers to interrupt.o(i.IntUnregister) for IntUnregister
+    i2c.o(i.I2CMasterInitExpClk) refers to i2c.o(i.I2CMasterEnable) for I2CMasterEnable
+    i2c.o(i.I2CSlaveInit) refers to i2c.o(i.I2CSlaveEnable) for I2CSlaveEnable
+    i2c.o(i._I2CIntNumberGet) refers to i2c.o(.constdata) for g_ppui32I2CIntMap
+    interrupt.o(i.IntDisable) refers to interrupt.o(.constdata) for g_pui32Dii16Regs
+    interrupt.o(i.IntEnable) refers to interrupt.o(.constdata) for g_pui32EnRegs
+    interrupt.o(i.IntIsEnabled) refers to interrupt.o(.constdata) for g_pui32EnRegs
+    interrupt.o(i.IntMasterDisable) refers to cpu.o(.emb_text) for CPUcpsid
+    interrupt.o(i.IntMasterEnable) refers to cpu.o(.emb_text) for CPUcpsie
+    interrupt.o(i.IntPendClear) refers to interrupt.o(.constdata) for g_pui32UnpendRegs
+    interrupt.o(i.IntPendSet) refers to interrupt.o(.constdata) for g_pui32PendRegs
+    interrupt.o(i.IntPriorityGet) refers to interrupt.o(.constdata) for g_pui32Regs
+    interrupt.o(i.IntPriorityGroupingGet) refers to interrupt.o(.constdata) for g_pui32Priority
+    interrupt.o(i.IntPriorityGroupingSet) refers to interrupt.o(.constdata) for g_pui32Priority
+    interrupt.o(i.IntPriorityMaskGet) refers to cpu.o(.emb_text) for CPUbasepriGet
+    interrupt.o(i.IntPriorityMaskSet) refers to cpu.o(.emb_text) for CPUbasepriSet
+    interrupt.o(i.IntPrioritySet) refers to interrupt.o(.constdata) for g_pui32Regs
+    interrupt.o(i.IntRegister) refers to interrupt.o(vtable) for g_pfnRAMVectors
+    interrupt.o(i.IntUnregister) refers to interrupt.o(i._IntDefaultHandler) for _IntDefaultHandler
+    interrupt.o(i.IntUnregister) refers to interrupt.o(vtable) for g_pfnRAMVectors
+    lcd.o(i.LCDClockReset) refers to sysctl.o(.emb_text) for SysCtlDelay
+    lcd.o(i.LCDIntRegister) refers to interrupt.o(i.IntRegister) for IntRegister
+    lcd.o(i.LCDIntRegister) refers to interrupt.o(i.IntEnable) for IntEnable
+    lcd.o(i.LCDIntUnregister) refers to interrupt.o(i.IntDisable) for IntDisable
+    lcd.o(i.LCDIntUnregister) refers to interrupt.o(i.IntUnregister) for IntUnregister
+    lcd.o(i.LCDRasterEnable) refers to lcd.o(i.LCDClockReset) for LCDClockReset
+    onewire.o(i.OneWireDMAEnable) refers to sysctl.o(.emb_text) for SysCtlDelay
+    onewire.o(i.OneWireIntRegister) refers to onewire.o(i._OneWireIntNumberGet) for _OneWireIntNumberGet
+    onewire.o(i.OneWireIntRegister) refers to interrupt.o(i.IntRegister) for IntRegister
+    onewire.o(i.OneWireIntRegister) refers to interrupt.o(i.IntEnable) for IntEnable
+    onewire.o(i.OneWireIntUnregister) refers to onewire.o(i._OneWireIntNumberGet) for _OneWireIntNumberGet
+    onewire.o(i.OneWireIntUnregister) refers to interrupt.o(i.IntDisable) for IntDisable
+    onewire.o(i.OneWireIntUnregister) refers to interrupt.o(i.IntUnregister) for IntUnregister
+    pwm.o(i.PWMFaultIntRegister) refers to pwm.o(i._PWMFaultIntNumberGet) for _PWMFaultIntNumberGet
+    pwm.o(i.PWMFaultIntRegister) refers to interrupt.o(i.IntRegister) for IntRegister
+    pwm.o(i.PWMFaultIntRegister) refers to interrupt.o(i.IntEnable) for IntEnable
+    pwm.o(i.PWMFaultIntUnregister) refers to pwm.o(i._PWMFaultIntNumberGet) for _PWMFaultIntNumberGet
+    pwm.o(i.PWMFaultIntUnregister) refers to interrupt.o(i.IntDisable) for IntDisable
+    pwm.o(i.PWMFaultIntUnregister) refers to interrupt.o(i.IntUnregister) for IntUnregister
+    pwm.o(i.PWMGenIntRegister) refers to pwm.o(i._PWMGenIntNumberGet) for _PWMGenIntNumberGet
+    pwm.o(i.PWMGenIntRegister) refers to interrupt.o(i.IntRegister) for IntRegister
+    pwm.o(i.PWMGenIntRegister) refers to interrupt.o(i.IntEnable) for IntEnable
+    pwm.o(i.PWMGenIntUnregister) refers to pwm.o(i._PWMGenIntNumberGet) for _PWMGenIntNumberGet
+    pwm.o(i.PWMGenIntUnregister) refers to interrupt.o(i.IntDisable) for IntDisable
+    pwm.o(i.PWMGenIntUnregister) refers to interrupt.o(i.IntUnregister) for IntUnregister
+    qei.o(i.QEIIntRegister) refers to qei.o(i._QEIIntNumberGet) for _QEIIntNumberGet
+    qei.o(i.QEIIntRegister) refers to interrupt.o(i.IntRegister) for IntRegister
+    qei.o(i.QEIIntRegister) refers to interrupt.o(i.IntEnable) for IntEnable
+    qei.o(i.QEIIntUnregister) refers to qei.o(i._QEIIntNumberGet) for _QEIIntNumberGet
+    qei.o(i.QEIIntUnregister) refers to interrupt.o(i.IntDisable) for IntDisable
+    qei.o(i.QEIIntUnregister) refers to interrupt.o(i.IntUnregister) for IntUnregister
+    shamd5.o(i.SHAMD5DataProcess) refers to shamd5.o(i.SHAMD5HashLengthSet) for SHAMD5HashLengthSet
+    shamd5.o(i.SHAMD5DataProcess) refers to shamd5.o(i._SHAMD5DataWriteMultiple) for _SHAMD5DataWriteMultiple
+    shamd5.o(i.SHAMD5DataProcess) refers to shamd5.o(i.SHAMD5ResultRead) for SHAMD5ResultRead
+    shamd5.o(i.SHAMD5HMACProcess) refers to shamd5.o(i.SHAMD5HashLengthSet) for SHAMD5HashLengthSet
+    shamd5.o(i.SHAMD5HMACProcess) refers to shamd5.o(i._SHAMD5DataWriteMultiple) for _SHAMD5DataWriteMultiple
+    shamd5.o(i.SHAMD5HMACProcess) refers to shamd5.o(i.SHAMD5ResultRead) for SHAMD5ResultRead
+    shamd5.o(i.SHAMD5IntRegister) refers to interrupt.o(i.IntRegister) for IntRegister
+    shamd5.o(i.SHAMD5IntRegister) refers to interrupt.o(i.IntEnable) for IntEnable
+    shamd5.o(i.SHAMD5IntUnregister) refers to interrupt.o(i.IntDisable) for IntDisable
+    shamd5.o(i.SHAMD5IntUnregister) refers to interrupt.o(i.IntUnregister) for IntUnregister
+    shamd5.o(i._SHAMD5DataWriteMultiple) refers to shamd5.o(i.SHAMD5DataWrite) for SHAMD5DataWrite
+    ssi.o(i.SSIIntRegister) refers to ssi.o(i._SSIIntNumberGet) for _SSIIntNumberGet
+    ssi.o(i.SSIIntRegister) refers to interrupt.o(i.IntRegister) for IntRegister
+    ssi.o(i.SSIIntRegister) refers to interrupt.o(i.IntEnable) for IntEnable
+    ssi.o(i.SSIIntUnregister) refers to ssi.o(i._SSIIntNumberGet) for _SSIIntNumberGet
+    ssi.o(i.SSIIntUnregister) refers to interrupt.o(i.IntDisable) for IntDisable
+    ssi.o(i.SSIIntUnregister) refers to interrupt.o(i.IntUnregister) for IntUnregister
+    ssi.o(i._SSIIntNumberGet) refers to ssi.o(.constdata) for g_ppui32SSIIntMap
+    sw_crc.o(i.Crc16) refers to sw_crc.o(.constdata) for g_pui16Crc16
+    sw_crc.o(i.Crc16Array) refers to sw_crc.o(i.Crc16) for Crc16
+    sw_crc.o(i.Crc16Array3) refers to sw_crc.o(.constdata) for g_pui16Crc16
+    sw_crc.o(i.Crc32) refers to sw_crc.o(.constdata) for g_pui32Crc32
+    sw_crc.o(i.Crc8CCITT) refers to sw_crc.o(.constdata) for g_pui8Crc8CCITT
+    sysctl.o(i.SysCtlClockFreqSet) refers to sysctl.o(i._SysCtlMemTimingGet) for _SysCtlMemTimingGet
+    sysctl.o(i.SysCtlClockFreqSet) refers to sysctl.o(i._SysCtlFrequencyGet) for _SysCtlFrequencyGet
+    sysctl.o(i.SysCtlClockFreqSet) refers to sysctl.o(.constdata) for g_pui32Xtals
+    sysctl.o(i.SysCtlClockGet) refers to sysctl.o(.constdata) for g_pui32Xtals
+    sysctl.o(i.SysCtlClockSet) refers to sysctl.o(.emb_text) for SysCtlDelay
+    sysctl.o(i.SysCtlDeepSleep) refers to cpu.o(.emb_text) for CPUwfi
+    sysctl.o(i.SysCtlIntRegister) refers to interrupt.o(i.IntRegister) for IntRegister
+    sysctl.o(i.SysCtlIntRegister) refers to interrupt.o(i.IntEnable) for IntEnable
+    sysctl.o(i.SysCtlIntUnregister) refers to interrupt.o(i.IntDisable) for IntDisable
+    sysctl.o(i.SysCtlIntUnregister) refers to interrupt.o(i.IntUnregister) for IntUnregister
+    sysctl.o(i.SysCtlSleep) refers to cpu.o(.emb_text) for CPUwfi
+    sysctl.o(i.SysCtlVCOGet) refers to sysctl.o(.constdata) for g_pui32Xtals
+    sysctl.o(i._SysCtlMemTimingGet) refers to sysctl.o(.constdata) for g_sXTALtoMEMTIM
+    sysexc.o(i.SysExcIntRegister) refers to sysexc.o(i._SysExcIntNumberGet) for _SysExcIntNumberGet
+    sysexc.o(i.SysExcIntRegister) refers to interrupt.o(i.IntRegister) for IntRegister
+    sysexc.o(i.SysExcIntRegister) refers to interrupt.o(i.IntEnable) for IntEnable
+    sysexc.o(i.SysExcIntUnregister) refers to sysexc.o(i._SysExcIntNumberGet) for _SysExcIntNumberGet
+    sysexc.o(i.SysExcIntUnregister) refers to interrupt.o(i.IntDisable) for IntDisable
+    sysexc.o(i.SysExcIntUnregister) refers to interrupt.o(i.IntUnregister) for IntUnregister
+    systick.o(i.SysTickIntRegister) refers to interrupt.o(i.IntRegister) for IntRegister
+    systick.o(i.SysTickIntUnregister) refers to interrupt.o(i.IntUnregister) for IntUnregister
+    timer.o(i.TimerIntRegister) refers to timer.o(i._TimerIntNumberGet) for _TimerIntNumberGet
+    timer.o(i.TimerIntRegister) refers to interrupt.o(i.IntRegister) for IntRegister
+    timer.o(i.TimerIntRegister) refers to interrupt.o(i.IntEnable) for IntEnable
+    timer.o(i.TimerIntUnregister) refers to timer.o(i._TimerIntNumberGet) for _TimerIntNumberGet
+    timer.o(i.TimerIntUnregister) refers to interrupt.o(i.IntDisable) for IntDisable
+    timer.o(i.TimerIntUnregister) refers to interrupt.o(i.IntUnregister) for IntUnregister
+    timer.o(i._TimerIntNumberGet) refers to timer.o(.constdata) for g_ppui32TimerIntMap
+    uart.o(i.UARTConfigSetExpClk) refers to uart.o(i.UARTDisable) for UARTDisable
+    uart.o(i.UARTConfigSetExpClk) refers to uart.o(i.UARTEnable) for UARTEnable
+    uart.o(i.UARTIntRegister) refers to uart.o(i._UARTIntNumberGet) for _UARTIntNumberGet
+    uart.o(i.UARTIntRegister) refers to interrupt.o(i.IntRegister) for IntRegister
+    uart.o(i.UARTIntRegister) refers to interrupt.o(i.IntEnable) for IntEnable
+    uart.o(i.UARTIntUnregister) refers to uart.o(i._UARTIntNumberGet) for _UARTIntNumberGet
+    uart.o(i.UARTIntUnregister) refers to interrupt.o(i.IntDisable) for IntDisable
+    uart.o(i.UARTIntUnregister) refers to interrupt.o(i.IntUnregister) for IntUnregister
+    uart.o(i._UARTIntNumberGet) refers to uart.o(.constdata) for g_ppui32UARTIntMap
+    udma.o(i.uDMAIntRegister) refers to interrupt.o(i.IntRegister) for IntRegister
+    udma.o(i.uDMAIntRegister) refers to interrupt.o(i.IntEnable) for IntEnable
+    udma.o(i.uDMAIntUnregister) refers to interrupt.o(i.IntDisable) for IntDisable
+    udma.o(i.uDMAIntUnregister) refers to interrupt.o(i.IntUnregister) for IntUnregister
+    usb.o(i.USBFIFOConfigGet) refers to usb.o(i._USBIndexRead) for _USBIndexRead
+    usb.o(i.USBFIFOConfigSet) refers to usb.o(i._USBIndexWrite) for _USBIndexWrite
+    usb.o(i.USBIntRegister) refers to usb.o(i._USBIntNumberGet) for _USBIntNumberGet
+    usb.o(i.USBIntRegister) refers to interrupt.o(i.IntRegister) for IntRegister
+    usb.o(i.USBIntRegister) refers to interrupt.o(i.IntEnable) for IntEnable
+    usb.o(i.USBIntUnregister) refers to usb.o(i._USBIntNumberGet) for _USBIntNumberGet
+    usb.o(i.USBIntUnregister) refers to interrupt.o(i.IntDisable) for IntDisable
+    usb.o(i.USBIntUnregister) refers to interrupt.o(i.IntUnregister) for IntUnregister
+    watchdog.o(i.WatchdogIntRegister) refers to interrupt.o(i.IntRegister) for IntRegister
+    watchdog.o(i.WatchdogIntRegister) refers to interrupt.o(i.IntEnable) for IntEnable
+    watchdog.o(i.WatchdogIntUnregister) refers to interrupt.o(i.IntDisable) for IntDisable
+    watchdog.o(i.WatchdogIntUnregister) refers to interrupt.o(i.IntUnregister) for IntUnregister
+    uartstdio.o(i.UARTStdioConfig) refers to sysctl.o(i.SysCtlPeripheralPresent) for SysCtlPeripheralPresent
+    uartstdio.o(i.UARTStdioConfig) refers to sysctl.o(i.SysCtlPeripheralEnable) for SysCtlPeripheralEnable
+    uartstdio.o(i.UARTStdioConfig) refers to uart.o(i.UARTConfigSetExpClk) for UARTConfigSetExpClk
+    uartstdio.o(i.UARTStdioConfig) refers to uart.o(i.UARTEnable) for UARTEnable
+    uartstdio.o(i.UARTStdioConfig) refers to uartstdio.o(.constdata) for g_ui32UARTPeriph
+    uartstdio.o(i.UARTStdioConfig) refers to uartstdio.o(.data) for g_ui32Base
+    uartstdio.o(i.UARTgetc) refers to uart.o(i.UARTCharGet) for UARTCharGet
+    uartstdio.o(i.UARTgetc) refers to uartstdio.o(.data) for g_ui32Base
+    uartstdio.o(i.UARTgets) refers to uart.o(i.UARTCharGet) for UARTCharGet
+    uartstdio.o(i.UARTgets) refers to mpu.o(i.UARTwrite) for UARTwrite
+    uartstdio.o(i.UARTgets) refers to uartstdio.o(i.UARTwrite) for UARTwrite
+    uartstdio.o(i.UARTgets) refers to uart.o(i.UARTCharPut) for UARTCharPut
+    uartstdio.o(i.UARTgets) refers to uartstdio.o(.data) for g_ui32Base
+    uartstdio.o(i.UARTprintf) refers to mpu.o(i.UARTvprintf) for UARTvprintf
+    uartstdio.o(i.UARTprintf) refers to uartstdio.o(i.UARTvprintf) for UARTvprintf
+    uartstdio.o(i.UARTvprintf) refers to mpu.o(i.UARTwrite) for UARTwrite
+    uartstdio.o(i.UARTvprintf) refers to uartstdio.o(i.UARTwrite) for UARTwrite
+    uartstdio.o(i.UARTvprintf) refers to uartstdio.o(.constdata) for g_pcHex
+    uartstdio.o(i.UARTwrite) refers to uart.o(i.UARTCharPut) for UARTCharPut
+    uartstdio.o(i.UARTwrite) refers to uartstdio.o(.data) for g_ui32Base
+    uartstdio.o(.constdata) refers to uartstdio.o(.conststring) for .conststring
+    arm_nn_activations_q15.o(i.arm_nn_activations_direct_q15) refers to arm_nntables.o(.constdata) for sigmoidTable_q15
+    arm_nn_activations_q7.o(i.arm_nn_activations_direct_q7) refers to arm_nntables.o(.constdata) for sigmoidTable_q7
+    arm_convolve_1x1_hwc_q7_fast_nonsquare.o(i.arm_convolve_1x1_HWC_q7_fast_nonsquare) refers to arm_q7_to_q15_reordered_no_shift.o(i.arm_q7_to_q15_reordered_no_shift) for arm_q7_to_q15_reordered_no_shift
+    arm_convolve_1x1_hwc_q7_fast_nonsquare.o(i.arm_convolve_1x1_HWC_q7_fast_nonsquare) refers to arm_nn_mat_mult_kernel_q7_q15_reordered.o(i.arm_nn_mat_mult_kernel_q7_q15_reordered) for arm_nn_mat_mult_kernel_q7_q15_reordered
+    arm_convolve_hwc_q15_basic.o(i.arm_convolve_HWC_q15_basic) refers to rt_memclr.o(.text) for __aeabi_memclr
+    arm_convolve_hwc_q15_basic.o(i.arm_convolve_HWC_q15_basic) refers to rt_memcpy_v6.o(.text) for __aeabi_memcpy
+    arm_convolve_hwc_q15_fast.o(i.arm_convolve_HWC_q15_fast) refers to rt_memclr.o(.text) for __aeabi_memclr
+    arm_convolve_hwc_q15_fast.o(i.arm_convolve_HWC_q15_fast) refers to rt_memcpy_v6.o(.text) for __aeabi_memcpy
+    arm_convolve_hwc_q7_rgb.o(i.arm_convolve_HWC_q7_RGB) refers to arm_nn_mat_mult_kernel_q7_q15.o(i.arm_nn_mat_mult_kernel_q7_q15) for arm_nn_mat_mult_kernel_q7_q15
+    arm_convolve_hwc_q7_basic.o(i.arm_convolve_HWC_q7_basic) refers to rt_memclr.o(.text) for __aeabi_memclr
+    arm_convolve_hwc_q7_basic.o(i.arm_convolve_HWC_q7_basic) refers to arm_q7_to_q15_no_shift.o(i.arm_q7_to_q15_no_shift) for arm_q7_to_q15_no_shift
+    arm_convolve_hwc_q7_basic.o(i.arm_convolve_HWC_q7_basic) refers to arm_nn_mat_mult_kernel_q7_q15.o(i.arm_nn_mat_mult_kernel_q7_q15) for arm_nn_mat_mult_kernel_q7_q15
+    arm_convolve_hwc_q7_basic_nonsquare.o(i.arm_convolve_HWC_q7_basic_nonsquare) refers to rt_memclr.o(.text) for __aeabi_memclr
+    arm_convolve_hwc_q7_basic_nonsquare.o(i.arm_convolve_HWC_q7_basic_nonsquare) refers to arm_q7_to_q15_no_shift.o(i.arm_q7_to_q15_no_shift) for arm_q7_to_q15_no_shift
+    arm_convolve_hwc_q7_basic_nonsquare.o(i.arm_convolve_HWC_q7_basic_nonsquare) refers to arm_nn_mat_mult_kernel_q7_q15.o(i.arm_nn_mat_mult_kernel_q7_q15) for arm_nn_mat_mult_kernel_q7_q15
+    arm_convolve_hwc_q7_fast.o(i.arm_convolve_HWC_q7_fast) refers to rt_memclr.o(.text) for __aeabi_memclr
+    arm_convolve_hwc_q7_fast.o(i.arm_convolve_HWC_q7_fast) refers to arm_q7_to_q15_reordered_no_shift.o(i.arm_q7_to_q15_reordered_no_shift) for arm_q7_to_q15_reordered_no_shift
+    arm_convolve_hwc_q7_fast.o(i.arm_convolve_HWC_q7_fast) refers to arm_nn_mat_mult_kernel_q7_q15_reordered.o(i.arm_nn_mat_mult_kernel_q7_q15_reordered) for arm_nn_mat_mult_kernel_q7_q15_reordered
+    arm_convolve_hwc_q7_fast_nonsquare.o(i.arm_convolve_HWC_q7_fast_nonsquare) refers to rt_memclr.o(.text) for __aeabi_memclr
+    arm_convolve_hwc_q7_fast_nonsquare.o(i.arm_convolve_HWC_q7_fast_nonsquare) refers to arm_q7_to_q15_reordered_no_shift.o(i.arm_q7_to_q15_reordered_no_shift) for arm_q7_to_q15_reordered_no_shift
+    arm_convolve_hwc_q7_fast_nonsquare.o(i.arm_convolve_HWC_q7_fast_nonsquare) refers to arm_nn_mat_mult_kernel_q7_q15_reordered.o(i.arm_nn_mat_mult_kernel_q7_q15_reordered) for arm_nn_mat_mult_kernel_q7_q15_reordered
+    arm_depthwise_separable_conv_hwc_q7.o(i.arm_depthwise_separable_conv_HWC_q7) refers to rt_memclr.o(.text) for __aeabi_memclr
+    arm_depthwise_separable_conv_hwc_q7.o(i.arm_depthwise_separable_conv_HWC_q7) refers to rt_memcpy_v6.o(.text) for __aeabi_memcpy
+    arm_depthwise_separable_conv_hwc_q7_nonsquare.o(i.arm_depthwise_separable_conv_HWC_q7_nonsquare) refers to rt_memclr.o(.text) for __aeabi_memclr
+    arm_depthwise_separable_conv_hwc_q7_nonsquare.o(i.arm_depthwise_separable_conv_HWC_q7_nonsquare) refers to rt_memcpy_v6.o(.text) for __aeabi_memcpy
+    arm_fully_connected_q7.o(i.arm_fully_connected_q7) refers to arm_q7_to_q15_reordered_no_shift.o(i.arm_q7_to_q15_reordered_no_shift) for arm_q7_to_q15_reordered_no_shift
+    arm_fully_connected_q7_opt.o(i.arm_fully_connected_q7_opt) refers to arm_q7_to_q15_reordered_no_shift.o(i.arm_q7_to_q15_reordered_no_shift) for arm_q7_to_q15_reordered_no_shift
+    arm_pool_q7_hwc.o(i.arm_avepool_q7_HWC) refers to arm_q7_to_q15_no_shift.o(i.arm_q7_to_q15_no_shift) for arm_q7_to_q15_no_shift
+    arm_pool_q7_hwc.o(i.arm_avepool_q7_HWC) refers to arm_pool_q7_hwc.o(i.accumulate_q7_to_q15) for accumulate_q7_to_q15
+    arm_pool_q7_hwc.o(i.arm_avepool_q7_HWC) refers to arm_pool_q7_hwc.o(i.buffer_scale_back_q15_to_q7) for buffer_scale_back_q15_to_q7
+    arm_pool_q7_hwc.o(i.arm_maxpool_q7_HWC) refers to rt_memmove_v6.o(.text) for __aeabi_memmove
+    arm_pool_q7_hwc.o(i.arm_maxpool_q7_HWC) refers to arm_pool_q7_hwc.o(i.compare_and_replace_if_larger_q7) for compare_and_replace_if_larger_q7
+    arm_softmax_q15.o(i.arm_softmax_q15) refers to llsdiv.o(.text) for __aeabi_ldivmod
+    startup_tm4c123.o(STACK) refers (Special) to heapauxi.o(.text) for __use_two_region_memory
+    startup_tm4c123.o(HEAP) refers (Special) to heapauxi.o(.text) for __use_two_region_memory
+    startup_tm4c123.o(RESET) refers (Special) to heapauxi.o(.text) for __use_two_region_memory
+    startup_tm4c123.o(RESET) refers to startup_tm4c123.o(STACK) for __initial_sp
+    startup_tm4c123.o(RESET) refers to startup_tm4c123.o(.text) for Reset_Handler
+    startup_tm4c123.o(.text) refers (Special) to heapauxi.o(.text) for __use_two_region_memory
+    startup_tm4c123.o(.text) refers to system_tm4c123.o(i.SystemInit) for SystemInit
+    startup_tm4c123.o(.text) refers to __main.o(!!!main) for __main
+    startup_tm4c123.o(.text) refers to startup_tm4c123.o(HEAP) for Heap_Mem
+    startup_tm4c123.o(.text) refers to startup_tm4c123.o(STACK) for Stack_Mem
+    system_tm4c123.o(i.SystemCoreClockUpdate) refers to system_tm4c123.o(i.getOscClk) for getOscClk
+    system_tm4c123.o(i.SystemCoreClockUpdate) refers to system_tm4c123.o(.data) for SystemCoreClock
+    llsdiv.o(.text) refers to lludivv7m.o(.text) for __aeabi_uldivmod
+    rt_memcpy_v6.o(.text) refers to rt_memcpy_w.o(.text) for __aeabi_memcpy4
+    rt_memmove_v6.o(.text) refers to rt_memcpy_v6.o(.text) for __aeabi_memcpy
+    rt_memmove_v6.o(.text) refers to rt_memmove_w.o(.text) for __memmove_aligned
+    rt_memclr.o(.text) refers to rt_memclr_w.o(.text) for _memset_w
+    __main.o(!!!main) refers to __rtentry.o(.ARM.Collect$$rtentry$$00000000) for __rt_entry
+    basic.o(x$fpl$basic) refers (Special) to usenofp.o(x$fpl$usenofp) for __I$use$fp
+    d2f.o(x$fpl$d2f) refers (Special) to usenofp.o(x$fpl$usenofp) for __I$use$fp
+    d2f.o(x$fpl$d2f) refers to fretinf.o(x$fpl$fretinf) for __fpl_fretinf
+    d2f.o(x$fpl$d2f) refers to dnaninf.o(x$fpl$dnaninf) for __fpl_dnaninf
+    dflt_clz.o(x$fpl$dfltu) refers (Special) to usenofp.o(x$fpl$usenofp) for __I$use$fp
+    dflt_clz.o(x$fpl$dflt) refers (Special) to usenofp.o(x$fpl$usenofp) for __I$use$fp
+    dflt_clz.o(x$fpl$dfltn) refers (Special) to usenofp.o(x$fpl$usenofp) for __I$use$fp
+    atan2.o(i.__hardfp_atan2) refers (Special) to usenofp.o(x$fpl$usenofp) for __I$use$fp
+    atan2.o(i.__hardfp_atan2) refers to dunder.o(i.__mathlib_dbl_infnan2) for __mathlib_dbl_infnan2
+    atan2.o(i.__hardfp_atan2) refers to atan.o(i.atan) for atan
+    atan2.o(i.__hardfp_atan2) refers to basic.o(x$fpl$basic) for __aeabi_dneg
+    atan2.o(i.__hardfp_atan2) refers to ddiv.o(x$fpl$ddiv) for __aeabi_ddiv
+    atan2.o(i.__hardfp_atan2) refers to fabs.o(i.fabs) for fabs
+    atan2.o(i.__hardfp_atan2) refers to daddsub_clz.o(x$fpl$dsub) for __aeabi_dsub
+    atan2.o(i.__hardfp_atan2) refers to daddsub_clz.o(x$fpl$drsb) for __aeabi_drsub
+    atan2.o(i.__hardfp_atan2) refers to qnan.o(.constdata) for __mathlib_zero
+    atan2.o(i.__softfp_atan2) refers (Special) to usenofp.o(x$fpl$usenofp) for __I$use$fp
+    atan2.o(i.__softfp_atan2) refers to atan2.o(i.__hardfp_atan2) for __hardfp_atan2
+    atan2.o(i.atan2) refers (Special) to usenofp.o(x$fpl$usenofp) for __I$use$fp
+    atan2.o(i.atan2) refers to atan2.o(i.__hardfp_atan2) for __hardfp_atan2
+    atan2_x.o(i.____hardfp_atan2$lsc) refers (Special) to usenofp.o(x$fpl$usenofp) for __I$use$fp
+    atan2_x.o(i.____hardfp_atan2$lsc) refers to dunder.o(i.__mathlib_dbl_infnan2) for __mathlib_dbl_infnan2
+    atan2_x.o(i.____hardfp_atan2$lsc) refers to atan.o(i.atan) for atan
+    atan2_x.o(i.____hardfp_atan2$lsc) refers to _rserrno.o(.text) for __set_errno
+    atan2_x.o(i.____hardfp_atan2$lsc) refers to basic.o(x$fpl$basic) for __aeabi_dneg
+    atan2_x.o(i.____hardfp_atan2$lsc) refers to ddiv.o(x$fpl$ddiv) for __aeabi_ddiv
+    atan2_x.o(i.____hardfp_atan2$lsc) refers to fabs.o(i.fabs) for fabs
+    atan2_x.o(i.____hardfp_atan2$lsc) refers to daddsub_clz.o(x$fpl$dsub) for __aeabi_dsub
+    atan2_x.o(i.____hardfp_atan2$lsc) refers to daddsub_clz.o(x$fpl$drsb) for __aeabi_drsub
+    atan2_x.o(i.____hardfp_atan2$lsc) refers to qnan.o(.constdata) for __mathlib_zero
+    atan2_x.o(i.____softfp_atan2$lsc) refers (Special) to usenofp.o(x$fpl$usenofp) for __I$use$fp
+    atan2_x.o(i.____softfp_atan2$lsc) refers to atan2_x.o(i.____hardfp_atan2$lsc) for ____hardfp_atan2$lsc
+    atan2_x.o(i.__atan2$lsc) refers (Special) to usenofp.o(x$fpl$usenofp) for __I$use$fp
+    atan2_x.o(i.__atan2$lsc) refers to atan2_x.o(i.____hardfp_atan2$lsc) for ____hardfp_atan2$lsc
+    __rtentry.o(.ARM.Collect$$rtentry$$00000000) refers (Special) to __rtentry2.o(.ARM.Collect$$rtentry$$0000000A) for __rt_entry_li
+    __rtentry.o(.ARM.Collect$$rtentry$$00000000) refers (Special) to __rtentry2.o(.ARM.Collect$$rtentry$$0000000D) for __rt_entry_main
+    __rtentry.o(.ARM.Collect$$rtentry$$00000000) refers (Special) to __rtentry2.o(.ARM.Collect$$rtentry$$0000000C) for __rt_entry_postli_1
+    __rtentry.o(.ARM.Collect$$rtentry$$00000000) refers (Special) to __rtentry2.o(.ARM.Collect$$rtentry$$00000009) for __rt_entry_postsh_1
+    __rtentry.o(.ARM.Collect$$rtentry$$00000000) refers (Special) to __rtentry2.o(.ARM.Collect$$rtentry$$00000002) for __rt_entry_presh_1
+    __rtentry.o(.ARM.Collect$$rtentry$$00000000) refers (Special) to __rtentry4.o(.ARM.Collect$$rtentry$$00000004) for __rt_entry_sh
+    _rserrno.o(.text) refers to rt_errno_addr_intlibspace.o(.text) for __aeabi_errno_addr
+    rt_memmove_w.o(.text) refers to rt_memcpy_w.o(.text) for __aeabi_memcpy4
+    daddsub_clz.o(x$fpl$dadd) refers (Special) to usenofp.o(x$fpl$usenofp) for __I$use$fp
+    daddsub_clz.o(x$fpl$dadd) refers to daddsub_clz.o(x$fpl$dsub) for _dsub1
+    daddsub_clz.o(x$fpl$dadd) refers to dretinf.o(x$fpl$dretinf) for __fpl_dretinf
+    daddsub_clz.o(x$fpl$dadd) refers to dnaninf.o(x$fpl$dnaninf) for __fpl_dnaninf
+    daddsub_clz.o(x$fpl$drsb) refers (Special) to usenofp.o(x$fpl$usenofp) for __I$use$fp
+    daddsub_clz.o(x$fpl$drsb) refers to daddsub_clz.o(x$fpl$dadd) for _dadd1
+    daddsub_clz.o(x$fpl$drsb) refers to daddsub_clz.o(x$fpl$dsub) for _dsub1
+    daddsub_clz.o(x$fpl$dsub) refers (Special) to usenofp.o(x$fpl$usenofp) for __I$use$fp
+    daddsub_clz.o(x$fpl$dsub) refers to daddsub_clz.o(x$fpl$dadd) for _dadd1
+    daddsub_clz.o(x$fpl$dsub) refers to dnaninf.o(x$fpl$dnaninf) for __fpl_dnaninf
+    ddiv.o(x$fpl$drdiv) refers (Special) to usenofp.o(x$fpl$usenofp) for __I$use$fp
+    ddiv.o(x$fpl$drdiv) refers to ddiv.o(x$fpl$ddiv) for ddiv_entry
+    ddiv.o(x$fpl$ddiv) refers (Special) to usenofp.o(x$fpl$usenofp) for __I$use$fp
+    ddiv.o(x$fpl$ddiv) refers to dretinf.o(x$fpl$dretinf) for __fpl_dretinf
+    ddiv.o(x$fpl$ddiv) refers to dnaninf.o(x$fpl$dnaninf) for __fpl_dnaninf
+    dnaninf.o(x$fpl$dnaninf) refers (Special) to usenofp.o(x$fpl$usenofp) for __I$use$fp
+    fretinf.o(x$fpl$fretinf) refers (Special) to usenofp.o(x$fpl$usenofp) for __I$use$fp
+    atan.o(i.__hardfp_atan) refers (Special) to usenofp.o(x$fpl$usenofp) for __I$use$fp
+    atan.o(i.__hardfp_atan) refers to dunder.o(i.__mathlib_dbl_infnan) for __mathlib_dbl_infnan
+    atan.o(i.__hardfp_atan) refers to fpclassify.o(i.__ARM_fpclassify) for __ARM_fpclassify
+    atan.o(i.__hardfp_atan) refers to dunder.o(i.__mathlib_dbl_underflow) for __mathlib_dbl_underflow
+    atan.o(i.__hardfp_atan) refers to fabs.o(i.fabs) for fabs
+    atan.o(i.__hardfp_atan) refers to daddsub_clz.o(x$fpl$dadd) for __aeabi_dadd
+    atan.o(i.__hardfp_atan) refers to dmul.o(x$fpl$dmul) for __aeabi_dmul
+    atan.o(i.__hardfp_atan) refers to daddsub_clz.o(x$fpl$dsub) for __aeabi_dsub
+    atan.o(i.__hardfp_atan) refers to ddiv.o(x$fpl$ddiv) for __aeabi_ddiv
+    atan.o(i.__hardfp_atan) refers to poly.o(i.__kernel_poly) for __kernel_poly
+    atan.o(i.__hardfp_atan) refers to daddsub_clz.o(x$fpl$drsb) for __aeabi_drsub
+    atan.o(i.__hardfp_atan) refers to basic.o(x$fpl$basic) for __aeabi_dneg
+    atan.o(i.__hardfp_atan) refers to atan.o(.constdata) for .constdata
+    atan.o(i.__softfp_atan) refers (Special) to usenofp.o(x$fpl$usenofp) for __I$use$fp
+    atan.o(i.__softfp_atan) refers to atan.o(i.__hardfp_atan) for __hardfp_atan
+    atan.o(i.atan) refers (Special) to usenofp.o(x$fpl$usenofp) for __I$use$fp
+    atan.o(i.atan) refers to atan.o(i.__hardfp_atan) for __hardfp_atan
+    atan.o(.constdata) refers (Special) to usenofp.o(x$fpl$usenofp) for __I$use$fp
+    atan_x.o(i.____hardfp_atan$lsc) refers (Special) to usenofp.o(x$fpl$usenofp) for __I$use$fp
+    atan_x.o(i.____hardfp_atan$lsc) refers to dunder.o(i.__mathlib_dbl_infnan) for __mathlib_dbl_infnan
+    atan_x.o(i.____hardfp_atan$lsc) refers to fabs.o(i.fabs) for fabs
+    atan_x.o(i.____hardfp_atan$lsc) refers to daddsub_clz.o(x$fpl$dadd) for __aeabi_dadd
+    atan_x.o(i.____hardfp_atan$lsc) refers to dmul.o(x$fpl$dmul) for __aeabi_dmul
+    atan_x.o(i.____hardfp_atan$lsc) refers to daddsub_clz.o(x$fpl$dsub) for __aeabi_dsub
+    atan_x.o(i.____hardfp_atan$lsc) refers to ddiv.o(x$fpl$ddiv) for __aeabi_ddiv
+    atan_x.o(i.____hardfp_atan$lsc) refers to poly.o(i.__kernel_poly) for __kernel_poly
+    atan_x.o(i.____hardfp_atan$lsc) refers to daddsub_clz.o(x$fpl$drsb) for __aeabi_drsub
+    atan_x.o(i.____hardfp_atan$lsc) refers to basic.o(x$fpl$basic) for __aeabi_dneg
+    atan_x.o(i.____hardfp_atan$lsc) refers to atan_x.o(.constdata) for .constdata
+    atan_x.o(i.____softfp_atan$lsc) refers (Special) to usenofp.o(x$fpl$usenofp) for __I$use$fp
+    atan_x.o(i.____softfp_atan$lsc) refers to atan_x.o(i.____hardfp_atan$lsc) for ____hardfp_atan$lsc
+    atan_x.o(i.__atan$lsc) refers (Special) to usenofp.o(x$fpl$usenofp) for __I$use$fp
+    atan_x.o(i.__atan$lsc) refers to atan_x.o(i.____hardfp_atan$lsc) for ____hardfp_atan$lsc
+    atan_x.o(.constdata) refers (Special) to usenofp.o(x$fpl$usenofp) for __I$use$fp
+    dunder.o(i.__mathlib_dbl_divzero) refers to ddiv.o(x$fpl$ddiv) for __aeabi_ddiv
+    dunder.o(i.__mathlib_dbl_infnan) refers to daddsub_clz.o(x$fpl$dadd) for __aeabi_dadd
+    dunder.o(i.__mathlib_dbl_infnan2) refers to daddsub_clz.o(x$fpl$dadd) for __aeabi_dadd
+    dunder.o(i.__mathlib_dbl_invalid) refers to ddiv.o(x$fpl$ddiv) for __aeabi_ddiv
+    dunder.o(i.__mathlib_dbl_overflow) refers to dmul.o(x$fpl$dmul) for __aeabi_dmul
+    dunder.o(i.__mathlib_dbl_posinfnan) refers to dmul.o(x$fpl$dmul) for __aeabi_dmul
+    dunder.o(i.__mathlib_dbl_underflow) refers to dmul.o(x$fpl$dmul) for __aeabi_dmul
+    fabs.o(i.__hardfp_fabs) refers (Special) to usenofp.o(x$fpl$usenofp) for __I$use$fp
+    fabs.o(i.__softfp_fabs) refers (Special) to usenofp.o(x$fpl$usenofp) for __I$use$fp
+    fabs.o(i.fabs) refers (Special) to usenofp.o(x$fpl$usenofp) for __I$use$fp
+    qnan.o(.constdata) refers (Special) to usenofp.o(x$fpl$usenofp) for __I$use$fp
+    __rtentry2.o(.ARM.Collect$$rtentry$$00000008) refers to boardinit2.o(.text) for _platform_post_stackheap_init
+    __rtentry2.o(.ARM.Collect$$rtentry$$0000000A) refers to libinit.o(.ARM.Collect$$libinit$$00000000) for __rt_lib_init
+    __rtentry2.o(.ARM.Collect$$rtentry$$0000000B) refers to boardinit3.o(.text) for _platform_post_lib_init
+    __rtentry2.o(.ARM.Collect$$rtentry$$0000000D) refers to exit.o(.text) for exit
+    __rtentry2.o(.ARM.exidx) refers to __rtentry2.o(.ARM.Collect$$rtentry$$00000001) for .ARM.Collect$$rtentry$$00000001
+    __rtentry2.o(.ARM.exidx) refers to __rtentry2.o(.ARM.Collect$$rtentry$$00000008) for .ARM.Collect$$rtentry$$00000008
+    __rtentry2.o(.ARM.exidx) refers to __rtentry2.o(.ARM.Collect$$rtentry$$0000000A) for .ARM.Collect$$rtentry$$0000000A
+    __rtentry2.o(.ARM.exidx) refers to __rtentry2.o(.ARM.Collect$$rtentry$$0000000B) for .ARM.Collect$$rtentry$$0000000B
+    __rtentry2.o(.ARM.exidx) refers to __rtentry2.o(.ARM.Collect$$rtentry$$0000000D) for .ARM.Collect$$rtentry$$0000000D
+    __rtentry4.o(.ARM.Collect$$rtentry$$00000004) refers to sys_stackheap_outer.o(.text) for __user_setup_stackheap
+    __rtentry4.o(.ARM.exidx) refers to __rtentry4.o(.ARM.Collect$$rtentry$$00000004) for .ARM.Collect$$rtentry$$00000004
+    aeabi_ldiv0_sigfpe.o(.text) refers to rt_div0.o(.text) for __rt_div0
+    rt_errno_addr.o(.text) refers to rt_errno_addr.o(.bss) for __aeabi_errno_addr_data
+    rt_errno_addr_intlibspace.o(.text) refers to libspace.o(.bss) for __libspace_start
+    dmul.o(x$fpl$dmul) refers (Special) to usenofp.o(x$fpl$usenofp) for __I$use$fp
+    dmul.o(x$fpl$dmul) refers to dretinf.o(x$fpl$dretinf) for __fpl_dretinf
+    dmul.o(x$fpl$dmul) refers to dnaninf.o(x$fpl$dnaninf) for __fpl_dnaninf
+    dretinf.o(x$fpl$dretinf) refers (Special) to usenofp.o(x$fpl$usenofp) for __I$use$fp
+    fpclassify.o(i.__ARM_fpclassify) refers (Special) to usenofp.o(x$fpl$usenofp) for __I$use$fp
+    poly.o(i.__kernel_poly) refers (Special) to usenofp.o(x$fpl$usenofp) for __I$use$fp
+    poly.o(i.__kernel_poly) refers to dmul.o(x$fpl$dmul) for __aeabi_dmul
+    poly.o(i.__kernel_poly) refers to daddsub_clz.o(x$fpl$dadd) for __aeabi_dadd
+    libspace.o(.text) refers to libspace.o(.bss) for __libspace_start
+    sys_stackheap_outer.o(.text) refers to libspace.o(.text) for __user_perproc_libspace
+    sys_stackheap_outer.o(.text) refers to startup_tm4c123.o(.text) for __user_initial_stackheap
+    rt_div0.o(.text) refers to defsig_fpe_outer.o(.text) for __rt_SIGFPE
+    exit.o(.text) refers to rtexit.o(.ARM.Collect$$rtexit$$00000000) for __rt_exit
+    libinit.o(.ARM.Collect$$libinit$$00000000) refers (Special) to libinit2.o(.ARM.Collect$$libinit$$0000002E) for __rt_lib_init_alloca_1
+    libinit.o(.ARM.Collect$$libinit$$00000000) refers (Special) to libinit2.o(.ARM.Collect$$libinit$$00000027) for __rt_lib_init_argv_1
+    libinit.o(.ARM.Collect$$libinit$$00000000) refers (Special) to libinit2.o(.ARM.Collect$$libinit$$0000001B) for __rt_lib_init_atexit_1
+    libinit.o(.ARM.Collect$$libinit$$00000000) refers (Special) to libinit2.o(.ARM.Collect$$libinit$$00000021) for __rt_lib_init_clock_1
+    libinit.o(.ARM.Collect$$libinit$$00000000) refers (Special) to libinit2.o(.ARM.Collect$$libinit$$00000032) for __rt_lib_init_cpp_1
+    libinit.o(.ARM.Collect$$libinit$$00000000) refers (Special) to libinit2.o(.ARM.Collect$$libinit$$00000030) for __rt_lib_init_exceptions_1
+    libinit.o(.ARM.Collect$$libinit$$00000000) refers (Special) to libinit2.o(.ARM.Collect$$libinit$$00000001) for __rt_lib_init_fp_1
+    libinit.o(.ARM.Collect$$libinit$$00000000) refers (Special) to libinit2.o(.ARM.Collect$$libinit$$0000001F) for __rt_lib_init_fp_trap_1
+    libinit.o(.ARM.Collect$$libinit$$00000000) refers (Special) to libinit2.o(.ARM.Collect$$libinit$$00000023) for __rt_lib_init_getenv_1
+    libinit.o(.ARM.Collect$$libinit$$00000000) refers (Special) to libinit2.o(.ARM.Collect$$libinit$$0000000A) for __rt_lib_init_heap_1
+    libinit.o(.ARM.Collect$$libinit$$00000000) refers (Special) to libinit2.o(.ARM.Collect$$libinit$$00000011) for __rt_lib_init_lc_collate_1
+    libinit.o(.ARM.Collect$$libinit$$00000000) refers (Special) to libinit2.o(.ARM.Collect$$libinit$$00000013) for __rt_lib_init_lc_ctype_1
+    libinit.o(.ARM.Collect$$libinit$$00000000) refers (Special) to libinit2.o(.ARM.Collect$$libinit$$00000015) for __rt_lib_init_lc_monetary_1
+    libinit.o(.ARM.Collect$$libinit$$00000000) refers (Special) to libinit2.o(.ARM.Collect$$libinit$$00000017) for __rt_lib_init_lc_numeric_1
+    libinit.o(.ARM.Collect$$libinit$$00000000) refers (Special) to libinit2.o(.ARM.Collect$$libinit$$00000019) for __rt_lib_init_lc_time_1
+    libinit.o(.ARM.Collect$$libinit$$00000000) refers (Special) to libinit2.o(.ARM.Collect$$libinit$$00000004) for __rt_lib_init_preinit_1
+    libinit.o(.ARM.Collect$$libinit$$00000000) refers (Special) to libinit2.o(.ARM.Collect$$libinit$$0000000E) for __rt_lib_init_rand_1
+    libinit.o(.ARM.Collect$$libinit$$00000000) refers (Special) to libinit2.o(.ARM.Collect$$libinit$$00000033) for __rt_lib_init_return
+    libinit.o(.ARM.Collect$$libinit$$00000000) refers (Special) to libinit2.o(.ARM.Collect$$libinit$$0000001D) for __rt_lib_init_signal_1
+    libinit.o(.ARM.Collect$$libinit$$00000000) refers (Special) to libinit2.o(.ARM.Collect$$libinit$$00000025) for __rt_lib_init_stdio_1
+    libinit.o(.ARM.Collect$$libinit$$00000000) refers (Special) to libinit2.o(.ARM.Collect$$libinit$$0000000C) for __rt_lib_init_user_alloc_1
+    rtexit.o(.ARM.Collect$$rtexit$$00000000) refers (Special) to rtexit2.o(.ARM.Collect$$rtexit$$00000004) for __rt_exit_exit
+    rtexit.o(.ARM.Collect$$rtexit$$00000000) refers (Special) to rtexit2.o(.ARM.Collect$$rtexit$$00000003) for __rt_exit_ls
+    rtexit.o(.ARM.Collect$$rtexit$$00000000) refers (Special) to rtexit2.o(.ARM.Collect$$rtexit$$00000002) for __rt_exit_prels_1
+    rtexit.o(.ARM.exidx) refers (Special) to rtexit2.o(.ARM.Collect$$rtexit$$00000004) for __rt_exit_exit
+    rtexit.o(.ARM.exidx) refers (Special) to rtexit2.o(.ARM.Collect$$rtexit$$00000003) for __rt_exit_ls
+    rtexit.o(.ARM.exidx) refers (Special) to rtexit2.o(.ARM.Collect$$rtexit$$00000002) for __rt_exit_prels_1
+    rtexit.o(.ARM.exidx) refers to rtexit.o(.ARM.Collect$$rtexit$$00000000) for .ARM.Collect$$rtexit$$00000000
+    defsig_fpe_outer.o(.text) refers to defsig_fpe_inner.o(.text) for __rt_SIGFPE_inner
+    defsig_fpe_outer.o(.text) refers to defsig_exit.o(.text) for __sig_exit
+    defsig_fpe_formal.o(.text) refers to rt_raise.o(.text) for __rt_raise
+    libinit2.o(.ARM.Collect$$libinit$$00000001) refers to fpinit.o(x$fpl$fpinit) for _fp_init
+    libinit2.o(.ARM.Collect$$libinit$$00000010) refers to libinit2.o(.ARM.Collect$$libinit$$0000000F) for .ARM.Collect$$libinit$$0000000F
+    libinit2.o(.ARM.Collect$$libinit$$00000012) refers to libinit2.o(.ARM.Collect$$libinit$$0000000F) for .ARM.Collect$$libinit$$0000000F
+    libinit2.o(.ARM.Collect$$libinit$$00000014) refers to libinit2.o(.ARM.Collect$$libinit$$0000000F) for .ARM.Collect$$libinit$$0000000F
+    libinit2.o(.ARM.Collect$$libinit$$00000016) refers to libinit2.o(.ARM.Collect$$libinit$$0000000F) for .ARM.Collect$$libinit$$0000000F
+    libinit2.o(.ARM.Collect$$libinit$$00000018) refers to libinit2.o(.ARM.Collect$$libinit$$0000000F) for .ARM.Collect$$libinit$$0000000F
+    libinit2.o(.ARM.Collect$$libinit$$00000026) refers to argv_veneer.o(.emb_text) for __ARM_argv_veneer
+    libinit2.o(.ARM.Collect$$libinit$$00000027) refers to argv_veneer.o(.emb_text) for __ARM_argv_veneer
+    rtexit2.o(.ARM.Collect$$rtexit$$00000003) refers to libshutdown.o(.ARM.Collect$$libshutdown$$00000000) for __rt_lib_shutdown
+    rtexit2.o(.ARM.Collect$$rtexit$$00000004) refers to sys_exit.o(.text) for _sys_exit
+    rtexit2.o(.ARM.exidx) refers to rtexit2.o(.ARM.Collect$$rtexit$$00000001) for .ARM.Collect$$rtexit$$00000001
+    rtexit2.o(.ARM.exidx) refers to rtexit2.o(.ARM.Collect$$rtexit$$00000003) for .ARM.Collect$$rtexit$$00000003
+    rtexit2.o(.ARM.exidx) refers to rtexit2.o(.ARM.Collect$$rtexit$$00000004) for .ARM.Collect$$rtexit$$00000004
+    rt_raise.o(.text) refers to __raise.o(.text) for __raise
+    rt_raise.o(.text) refers to sys_exit.o(.text) for _sys_exit
+    defsig_exit.o(.text) refers to sys_exit.o(.text) for _sys_exit
+    defsig_fpe_inner.o(.text) refers to defsig_general.o(.text) for __default_signal_display
+    argv_veneer.o(.emb_text) refers to _get_argv_nomalloc.o(.text) for __ARM_get_argv
+    sys_exit.o(.text) refers (Special) to use_no_semi.o(.text) for __I$use$semihosting
+    sys_exit.o(.text) refers (Special) to indicate_semi.o(.text) for __semihosting_library_function
+    __raise.o(.text) refers to defsig.o(CL$$defsig) for __default_signal_handler
+    defsig_general.o(.text) refers to sys_wrch.o(.text) for _ttywrch
+    _get_argv_nomalloc.o(.text) refers (Special) to hrguard.o(.text) for __heap_region$guard
+    _get_argv_nomalloc.o(.text) refers to defsig_rtmem_outer.o(.text) for __rt_SIGRTMEM
+    _get_argv_nomalloc.o(.text) refers to sys_command.o(.text) for _sys_command_string
+    libshutdown.o(.ARM.Collect$$libshutdown$$00000000) refers (Special) to libshutdown2.o(.ARM.Collect$$libshutdown$$00000002) for __rt_lib_shutdown_cpp_1
+    libshutdown.o(.ARM.Collect$$libshutdown$$00000000) refers (Special) to libshutdown2.o(.ARM.Collect$$libshutdown$$00000007) for __rt_lib_shutdown_fp_trap_1
+    libshutdown.o(.ARM.Collect$$libshutdown$$00000000) refers (Special) to libshutdown2.o(.ARM.Collect$$libshutdown$$0000000F) for __rt_lib_shutdown_heap_1
+    libshutdown.o(.ARM.Collect$$libshutdown$$00000000) refers (Special) to libshutdown2.o(.ARM.Collect$$libshutdown$$00000010) for __rt_lib_shutdown_return
+    libshutdown.o(.ARM.Collect$$libshutdown$$00000000) refers (Special) to libshutdown2.o(.ARM.Collect$$libshutdown$$0000000A) for __rt_lib_shutdown_signal_1
+    libshutdown.o(.ARM.Collect$$libshutdown$$00000000) refers (Special) to libshutdown2.o(.ARM.Collect$$libshutdown$$00000004) for __rt_lib_shutdown_stdio_1
+    libshutdown.o(.ARM.Collect$$libshutdown$$00000000) refers (Special) to libshutdown2.o(.ARM.Collect$$libshutdown$$0000000C) for __rt_lib_shutdown_user_alloc_1
+    sys_wrch.o(.text) refers (Special) to use_no_semi.o(.text) for __I$use$semihosting
+    sys_wrch.o(.text) refers (Special) to indicate_semi.o(.text) for __semihosting_library_function
+    sys_command.o(.text) refers (Special) to use_no_semi.o(.text) for __I$use$semihosting
+    sys_command.o(.text) refers (Special) to indicate_semi.o(.text) for __semihosting_library_function
+    defsig_rtmem_outer.o(.text) refers to defsig_rtmem_inner.o(.text) for __rt_SIGRTMEM_inner
+    defsig_rtmem_outer.o(.text) refers to defsig_exit.o(.text) for __sig_exit
+    defsig_rtmem_formal.o(.text) refers to rt_raise.o(.text) for __rt_raise
+    defsig.o(CL$$defsig) refers to defsig_fpe_inner.o(.text) for __rt_SIGFPE_inner
+    defsig.o(CL$$defsig) refers to defsig_rtmem_inner.o(.text) for __rt_SIGRTMEM_inner
+    defsig_abrt_inner.o(.text) refers to defsig_general.o(.text) for __default_signal_display
+    defsig_rtred_inner.o(.text) refers to defsig_general.o(.text) for __default_signal_display
+    defsig_rtmem_inner.o(.text) refers to defsig_general.o(.text) for __default_signal_display
+    defsig_stak_inner.o(.text) refers to defsig_general.o(.text) for __default_signal_display
+    defsig_pvfn_inner.o(.text) refers to defsig_general.o(.text) for __default_signal_display
+    defsig_cppl_inner.o(.text) refers to defsig_general.o(.text) for __default_signal_display
+    defsig_segv_inner.o(.text) refers to defsig_general.o(.text) for __default_signal_display
+    defsig_other.o(.text) refers to defsig_general.o(.text) for __default_signal_display
+

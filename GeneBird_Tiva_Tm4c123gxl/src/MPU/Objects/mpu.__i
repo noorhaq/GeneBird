@@ -1,0 +1,8 @@
+--c99 --gnu -c --cpu Cortex-M4.fp -D__EVAL -g -O0 --apcs=interwork --split_sections -I ..\..\src
+-I.\RTE\_Target_1
+-IC:\Users\noorh\AppData\Local\Arm\Packs\ARM\CMSIS\5.5.1\CMSIS\Core\Include
+-IC:\Users\noorh\AppData\Local\Arm\Packs\ARM\CMSIS\5.5.1\CMSIS\DSP\Include
+-IC:\Users\noorh\AppData\Local\Arm\Packs\ARM\CMSIS\5.5.1\CMSIS\NN\Include
+-IC:\Users\noorh\AppData\Local\Arm\Packs\Keil\TM4C_DFP\1.1.0\Device\Include\TM4C123
+-D__UVISION_VERSION="528" -D_RTE_ -DTM4C123GH6PM -DPART_TM4C123GH6PM
+-o .\objects\mpu.o --omf_browse .\objects\mpu.crf --depend .\objects\mpu.d "mpu.c"

@@ -1,0 +1,13 @@
+.\objects\pwm_1.o: pwm_1.c
+.\objects\pwm_1.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
+.\objects\pwm_1.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdbool.h
+.\objects\pwm_1.o: time.h
+.\objects\pwm_1.o: pwm_1.h
+.\objects\pwm_1.o: mat.h
+.\objects\pwm_1.o: inc/hw_memmap.h
+.\objects\pwm_1.o: inc/hw_ints.h
+.\objects\pwm_1.o: driverlib/gpio.h
+.\objects\pwm_1.o: driverlib/interrupt.h
+.\objects\pwm_1.o: driverlib/pin_map.h
+.\objects\pwm_1.o: driverlib/sysctl.h
+.\objects\pwm_1.o: driverlib/pwm.h

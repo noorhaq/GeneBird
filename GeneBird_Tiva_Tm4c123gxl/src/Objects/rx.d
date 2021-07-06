@@ -1,0 +1,14 @@
+.\objects\rx.o: rx.c
+.\objects\rx.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
+.\objects\rx.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdbool.h
+.\objects\rx.o: buzzer.h
+.\objects\rx.o: rx.h
+.\objects\rx.o: time.h
+.\objects\rx.o: mat.h
+.\objects\rx.o: pwm_1.h
+.\objects\rx.o: inc/hw_memmap.h
+.\objects\rx.o: inc/hw_ints.h
+.\objects\rx.o: driverlib/gpio.h
+.\objects\rx.o: driverlib/interrupt.h
+.\objects\rx.o: driverlib/pin_map.h
+.\objects\rx.o: driverlib/sysctl.h
