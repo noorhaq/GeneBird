@@ -87,7 +87,7 @@ void ppm_setup() {
    
 /* You can remove the password parameter if you want the AP to be open. */
 
-  IPAddress myIP = WiFi.softAPIP();
+  
 
   if(captive_portal)
     dnsServer.start(DNS_PORT, "*", apIP);
@@ -157,10 +157,16 @@ unsigned long time_now = 0;
 void ppm_loop() {
 
   webSocket.loop();
+
   if(captive_portal)
     dnsServer.processNextRequest();
   server.handleClient();
-  if(alivecount>1000){
+  yield();
+}
+
+void _check()
+{
+    if(alivecount>1000){
     for(int i=0; i<4;i++){
       ppm[i]=900;
     }
@@ -168,5 +174,4 @@ void ppm_loop() {
       ppm[i]=1100;
     }
   }
-  yield();
 }

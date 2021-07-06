@@ -1,29 +1,12 @@
 //==================================================RECEIVER==================================================//
 
 
-BLYNK_WRITE(V0)
+void _Reciever()
 {
-  rcValue[0] = param.asInt();
-}
-BLYNK_WRITE(V1)
-{
-  rcValue[1] = param.asInt();
-}
-BLYNK_WRITE(V2)
-{
-  rcValue[2] = param.asInt();
-}
-BLYNK_WRITE(V3)
-{
-  rcValue[3] = param.asInt();
-
-}
-
-BLYNK_WRITE(V5)
-{
-  rcValue[AU1] = param.asInt();
-}
-BLYNK_WRITE(V6)
-{
-  armed = param.asInt();
+  rcValue[0] = ppm[2]; //ROLL
+  rcValue[1] = ppm[3]; //Pitch
+  rcValue[2] = ppm[1]; //Throttle
+  rcValue[3] = ppm[0]; //YAW
+  rcValue[AU1] = ppm[4]; //AUX1
+  armed = ppm[5];  //AUX2
 }

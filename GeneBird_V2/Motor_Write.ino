@@ -7,6 +7,7 @@ void mix()
     servo[1] = constrain(rcValue[THR] - axisPID[ROLL] - axisPID[PITCH] + axisPID[YAW], 1000, 2000); //FRONT_R
     servo[2] = constrain(rcValue[THR] - axisPID[ROLL] + axisPID[PITCH] - axisPID[YAW], 1000, 2000); //REAR_R
     servo[3] = constrain(rcValue[THR] + axisPID[ROLL] + axisPID[PITCH] + axisPID[YAW], 1000, 2000); //REAR_L
+
   }
   else
   {

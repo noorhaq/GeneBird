@@ -1,9 +1,9 @@
-#define BLYNK_PRINT Serial
+
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
-#include <BlynkSimpleEsp8266.h>
+
 #include <Wire.h>
-#include <EEPROM.h>
+//#include <//EEPROM.h>
 
 #include <WebSocketsServer.h>
 #include <DNSServer.h>
@@ -78,7 +78,7 @@ static int16_t rcCommand[] = {0, 0, 0};
 
 static int8_t flightmode;
 static int8_t oldflightmode;
-boolean armed = false;
+int armed = false;
 uint8_t armct = 0;
 int debugvalue = 0;
 

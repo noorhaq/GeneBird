@@ -398,7 +398,7 @@ struct msp_comp_gps_t {
 #define MSP_NAV_STATUS_ERROR_NONE               0   // All systems clear
 #define MSP_NAV_STATUS_ERROR_TOOFAR             1   // Next waypoint distance is more than safety distance
 #define MSP_NAV_STATUS_ERROR_SPOILED_GPS        2   // GPS reception is compromised - Nav paused - copter is adrift !
-#define MSP_NAV_STATUS_ERROR_WP_CRC             3   // CRC error reading WP data from EEPROM - Nav stopped
+#define MSP_NAV_STATUS_ERROR_WP_CRC             3   // CRC error reading WP data from //EEPROM - Nav stopped
 #define MSP_NAV_STATUS_ERROR_FINISH             4   // End flag detected, navigation finished
 #define MSP_NAV_STATUS_ERROR_TIMEWAIT           5   // Waiting for poshold timer
 #define MSP_NAV_STATUS_ERROR_INVALID_JUMP       6   // Invalid jump target detected, aborting
@@ -672,4 +672,3 @@ class MSP {
     uint32_t _timeout;
     
 };
-

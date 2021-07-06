@@ -1,27 +1,23 @@
 void PID_Read()
 {
-  yawRate       = read_float(10);
-  rollPitchRate = read_float(14);
-  P_PID         = read_float(18);
-  I_PID         = read_float(22);
-  D_PID         = read_float(26);
-  P_Level_PID   = read_float(30);
-  I_Level_PID   = read_float(34);
-  D_Level_PID   = read_float(38);
+//  yawRate       = read_float(10);
+//  rollPitchRate = read_float(14);
+//  P_PID         = read_float(18);
+//  I_PID         = read_float(22);
+//  D_PID         = read_float(26);
+//  P_Level_PID   = read_float(30);
+//  I_Level_PID   = read_float(34);
+//  D_Level_PID   = read_float(38);
+      yawRate = 6.0;
+      rollPitchRate = 5.0;
+      P_PID = 0.33;    // P8
+      I_PID = 0.03;    // I8
+      D_PID = 2.8;
+      P_Level_PID = 0.35;   // P8
+      I_Level_PID = 0.03;   // I8
+      D_Level_PID = 2.8;
 }
-void PID_Store()
-{
-  write_float(10, yawRate);
-  write_float(14, rollPitchRate);
-  write_float(18, P_PID);
-  write_float(22, I_PID);
-  write_float(26, D_PID);
-  write_float(30, P_Level_PID);
-  write_float(34, I_Level_PID);
-  write_float(38, D_Level_PID);
-  EEPROM.write(62, 0xAA);
-  EEPROM.commit();
-}
+
 
 //==================================PID====================================//
 void pid()

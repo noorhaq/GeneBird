@@ -186,7 +186,7 @@ void ACC_Common()
       accADC[axis] = 0;
       accZero[axis] = 0;
     }
-    // Calculate average, shift Z down by acc_1G and store values in EEPROM at end of calibration
+    // Calculate average, shift Z down by acc_1G and store values in //EEPROM at end of calibration
     if (calibratingA == 1)
     {
       if (a[0] >= 0) a[0] += CALSTEPS / 2; else a[0] -= CALSTEPS / 2;
@@ -258,17 +258,13 @@ void MPU6050_init()
 //========================================================================================
 void ACC_Read()
 {
-  accZero[0] = read_int16(0);
-  accZero[1] = read_int16(2);
-  accZero[2] = read_int16(4);
-}
-void ACC_Store()
-{
-  write_int16(0, accZero[0]);
-  write_int16(2, accZero[1]);
-  write_int16(4, accZero[2]);
-  EEPROM.write(63, 0x55);
-  EEPROM.commit();
+  accZero[0] = -375;
+  accZero[1] = -64;
+  accZero[2] = -8;
+  Serial.println("Accel Data Calib ");
+  Serial.print(accZero[0] + "    ");
+  Serial.print(accZero[1] + "    ");
+  Serial.print(accZero[2] + "    ");
 }
 
 

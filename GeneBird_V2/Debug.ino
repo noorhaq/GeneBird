@@ -48,7 +48,7 @@ void _Debug()
       P_Level_PID = 0.35;   // P8
       I_Level_PID = 0.03;   // I8
       D_Level_PID = 2.8;
-      PID_Store();
+     // PID_Store();
       digitalWrite(GREEN_LED, HIGH);
     }
     else if (ch == 'W')
@@ -92,7 +92,7 @@ void _Debug()
       }
       else if (ch == 'S') {
         PID_Store();
-        Serial.print("stored in EEPROM");
+        Serial.print("stored in //EEPROM");
       }
       else
       {
@@ -109,7 +109,7 @@ void _Debug()
       Serial.println("R - read actual PID");
       Serial.println("Wpxx, Wixx, Wdxx - write gyro PID");
       Serial.println("WPxx, WIxx, WDxx - write level PID");
-      Serial.println("WS - Store PID in EEPROM");
+      Serial.println("WS - Store PID in //EEPROM");
       Serial.println("Display data:");
       Serial.println("0 - off");
       Serial.println("1 - Gyro values");
@@ -121,10 +121,10 @@ void _Debug()
     }
 
   }
-  if      (debugvalue == 1) Serial.printf("%4d %4d %4d \n", gyroADC[0], gyroADC[1], gyroADC[2]);
-  else if (debugvalue == 2) Serial.printf("%5d %5d %5d \n", accADC[0], accADC[1], accADC[2]);
-  else if (debugvalue == 3) Serial.printf("%3f %3f \n", angle[0], angle[1]);
-  else if (debugvalue == 6) Serial.printf("%3d %3d %3d %3d \n", servo[0], servo[1], servo[2], servo[3]);
+  if      (debugvalue == 1) Serial.printf("\r%4d %4d %4d \n", gyroADC[0], gyroADC[1], gyroADC[2]);
+  else if (debugvalue == 2) Serial.printf("\r%5d %5d %5d \n", accADC[0], accADC[1], accADC[2]);
+  else if (debugvalue == 3) Serial.printf("\r%3f %3f \n", angle[0], angle[1]);
+  else if (debugvalue == 6) Serial.printf("\r%3d %3d %3d %3d \n", servo[0], servo[1], servo[2], servo[3]);
   if (debugvalue == 5)
   {
     diff = micros() - mnow;
